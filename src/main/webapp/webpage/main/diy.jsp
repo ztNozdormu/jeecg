@@ -465,7 +465,6 @@ fa fa-times
         <tr>
             <td class="value"><input type="radio" value="sliding" name="indexStyle"  /><span>Sliding云桌面</span></td>
         </tr>
-        <!-- update-end--Author:longjb  Date:2013-03-15 for:新增首页风格  -->
         <tr>
             <td class="value"><input type="radio" value="ace" name="indexStyle"  /><span>ACE平面风格</span></td>
         </tr>
@@ -1011,6 +1010,7 @@ fa fa-times
 <script src="plug-in/ace/js/ace/ace.settings-skin.js"></script>
 <script src="plug-in/ace/js/ace/ace.widget-on-reload.js"></script>
 <script src="plug-in/ace/js/ace/ace.searchbox-autocomplete.js"></script>
+<script type="text/javascript" src="plug-in/jquery-plugs/i18n/jquery.i18n.properties.js"></script>
 <t:base type="tools"></t:base>
 <script src="plug-in/jquery-plugs/storage/jquery.storageapi.min.js"></script>
 <script>jQuery(function($) {

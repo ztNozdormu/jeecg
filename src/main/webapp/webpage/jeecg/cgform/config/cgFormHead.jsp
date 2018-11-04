@@ -42,7 +42,7 @@ String langurl = basePath + "/plug-in/mutiLang/" + lang +".js";
 </head>
 <body style="overflow-y: hidden; overflow-x: hidden;" scroll="no">
 <!-- 增加beforeSubmit页面逻辑删除-->
-<t:formvalid formid="formobj" dialog="true" usePlugin="password" beforeSubmit="deleteUnUsedFiled();" layout="table" tiptype="1" action="cgFormHeadController.do?save">
+<t:formvalid formid="formobj" dialog="true" usePlugin="password" beforeSubmit="beforeSub();" layout="table" tiptype="1" action="cgFormHeadController.do?save">
 	<!-- tiptype="1" -->
 	<input id="id" name="id" type="hidden" value="${cgFormHeadPage.id}">
 	<input id="langurl" name="langurl" type="hidden" value="<%=langurl%>">
@@ -58,7 +58,7 @@ String langurl = basePath + "/plug-in/mutiLang/" + lang +".js";
 				<span class="Validform_checktip"></span>
 			</td>
 			<td align="right"><label class="Validform_label"> <t:mutiLang langKey="table.description"/>: </label></td>
-			<td class="value"><input class="inputxt" id="content" name="content" value="${cgFormHeadPage.content}" datatype="s2-100"> <span class="Validform_checktip"></span></td>
+			<td class="value"><input class="inputxt" id="content" name="content" value="${cgFormHeadPage.content}" datatype="s2-100" nullmsg="<t:mutiLang langKey='please.input.table.content'/>" /> <span class="Validform_checktip"></span></td>
 		</tr>
 		<tr>
 			<td align="right"><label class="Validform_label"> <t:mutiLang langKey="pk.strategies"/>:</label></td>
@@ -231,7 +231,43 @@ $(function() {
 	<!--add-start--Author:scott Date:20160301 for：online表单移动样式单独配置-->
 	getFormTemplateName2();
 	<!--add-end--Author:scott Date:20160301 for：online表单移动样式单独配置-->
-}); 
+});
+//--add-start--Author:caoez Date:20180202 for：TASK #2520 【online开发】online维护字段，字段没有判断重复--
+//判断fieldname是否重复
+function isFieldNameDup() {
+    var fieldArray = new Array();
+    var fieldname;
+    $("#tab_div_database tr").each(function(){
+        fieldname = $(this).find("td:eq(3)>input").val();
+        if (fieldname !== null || fieldname !== undefined || fieldname !== '') {
+            fieldArray.push(fieldname);
+        }
+    })
+    var dupFieldArray = new Array();
+    fieldArray.sort();
+    for(var i = 0;i<fieldArray.length;i++)
+    {
+        var count = 0;
+        for(var j=i;j<fieldArray.length;j++)
+        {
+            if(fieldArray[i] == fieldArray[j])
+            {
+                count++;
+            }
+        }
+        if(count>1){
+            dupFieldArray.push([fieldArray[i],count]);
+        }
+    }
+    //dupFieldArray 二维数维中保存了 值和值的重复数
+    for(var  i = 0 ;i<dupFieldArray.length;i++)
+    {
+        tip(dupFieldArray[i][0]+'<t:mutiLang langKey="common.please.online.fieldname.duplicate"/>');
+
+//        alert("字段:"+dupFieldArray[i][0]+"重复"+dupFieldArray[i][1]+"次");
+    }
+}
+//--add-end--Author:caoez Date:20180202 for：TASK #2520 【online开发】online维护字段，字段没有判断重复--
 //根据是否为树形菜单隐藏或显示tree输入框
 function isTreeHandle() {
 	if($("#isTree").val() == "Y") {
@@ -244,7 +280,7 @@ function isTreeHandle() {
 		$("tr.tree").find(":input").attr("disabled", true).removeAttr("datatype").end().hide();
 	}
 }
-<!--add-start--Author:张忠亮  Date:20150714 for：根据表单类型获取风格-->
+//--add-start--Author:张忠亮  Date:20150714 for：根据表单类型获取风格--
 //获取表单风格模板名称
 function getFormTemplateName(){
  var type=$("#jformType").val();
@@ -269,7 +305,7 @@ function getFormTemplateName(){
 	});
 }
 
-<!--add-start--Author:scott Date:20160301 for：online表单移动样式单独配置-->
+//--add-start--Author:scott Date:20160301 for：online表单移动样式单独配置--
 //获取表单风格模板名称
 function getFormTemplateName2(){
  var type=$("#jformType").val();
@@ -293,17 +329,33 @@ function getFormTemplateName2(){
 		}
 	});
 }
-<!--add-end--Author:scott Date:20160301 for：online表单移动样式单独配置-->
+//--add-end--Author:scott Date:20160301 for：online表单移动样式单独配置--
 
 //表单类型改变 调用
 	function formTypeChange(){
 		jformTypeChange();
 		getFormTemplateName();
-		<!--add-start--Author:scott Date:20160301 for：online表单移动样式单独配置-->
 		getFormTemplateName2();
-		<!--add-end--Author:scott Date:20160301 for：online表单移动样式单独配置-->
 	}
-<!--add-end--Author:张忠亮  Date:20150714 for：根据表单类型获取风格-->
+//--add-end--Author:张忠亮  Date:20150714 for：根据表单类型获取风格--
+
+function beforeSub(){
+	var isCheck = true;
+	$("select[name*='showType']").each(function(){
+		var value = $(this).val();
+		if(value == 'date' || value == 'datetime') {
+			var name=$(this).attr("name");
+			var type=name.substring(0,name.lastIndexOf(".")+1)+"type";
+			if($("[name='"+type+"']").val()!='Date'){
+				isCheck =  false;
+			}
+		}
+	});
+	
+	if(!isCheck)return isCheck;
+	
+	deleteUnUsedFiled();
+}
 
 //add-start--Author:jg_renjie Date:20160413 for：TASK #1019 【平台bug】ONLINE百度编辑器控件样式不好。
 function getShowType(obj){
@@ -313,8 +365,29 @@ function getShowType(obj){
 	} else {
 		$this.parent().next().eq(0).find("input[name$=fieldLength]").val('120');
 	}
+	//add-begin--Author:Yandong Date:20180528 for：TASK #2730 【online】-创建/编辑表单对时间类型字段的特殊处理
+	if(value == 'date' || value == 'datetime') {
+		var name=$(obj).attr("name");
+		var type=name.substring(0,name.lastIndexOf(".")+1)+"type";
+		if($("[name='"+type+"']").val()!='Date'){
+			tip("字段类型为Date才能使用日期控件！")
+		}
+	}
+	//add-end--Author:Yandong Date:20180528 for：TASK #2730 【online】-创建/编辑表单对时间类型字段的特殊处理
 }
 //add-end--Author:jg_renjie Date:20160301 for：TASK #1019 【平台bug】ONLINE百度编辑器控件样式不好。
+
+function chooseOnly(obj){
+	if($(obj).val() == 'only'){
+		var name=$(obj).attr("name");
+		var showType=name.substring(0,name.lastIndexOf(".")+1)+"showType";
+		if($("[name='"+showType+"']").val()!='text'){
+			$(obj).val("");
+			tip("控件类型为文本框才能使用唯一校验!")
+		}
+	}
+}
+
 
 function selectField(select){
 	var selected = select.val().split(",");

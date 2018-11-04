@@ -18,7 +18,6 @@
 }
 -->
 </style>
-<!-- update-begin--Author:yugwu  Date:20170626 for：[TASK #2135]【浏览器兼容问题】IE8下样式乱了-------------------- -->
 </head>
 <body>
 <t:formvalid formid="formobj" dialog="false" layout="div" callback="test" action="jeecgFormDemoController.do?testsubmit" beforeSubmit="setContentc">
@@ -148,7 +147,16 @@
 		</tr>
 	</table>
 	</fieldset>
+	
+	<fieldset>
+	<legend>分类树标签  | t:treeSelectTag（CODE对应系统管理->分类管理） </legend>
+	<table>		
+		<tr>
+			<td>进口汽车分类：</td>
+			<td><t:treeSelectTag code="A03A02" field="sex" /> </td>
+		</tr>
+	</table>
+	</fieldset>
 </t:formvalid>
 </body>
 </html>
-<!-- update-end--Author:yugwu  Date:20170626 for：[TASK #2135]【浏览器兼容问题】IE8下样式乱了-------------------- -->

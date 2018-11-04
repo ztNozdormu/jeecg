@@ -12,8 +12,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.Formula;
 import org.jeecgframework.core.common.entity.IdEntity;
 
 /**
@@ -164,7 +162,7 @@ public class TSFunction extends IdEntity implements java.io.Serializable {
 
 	public boolean hasSubFunction(List<TSFunction> functions) {
 		for (TSFunction f : functions) {
-			if(f.getTSFunction()!=null){
+			if(f!=null && f.getTSFunction()!=null){
 				if(f.getTSFunction().getId().equals(this.getId())){
 					return true;
 				}
@@ -240,9 +238,6 @@ public class TSFunction extends IdEntity implements java.io.Serializable {
 	
 	@Column(name = "functionurl", length = 100)
 	public String getFunctionUrl() {
-		if(this.getTSFunctions() != null && this.getTSFunctions().size() > 0){
-			return "";
-		}
 		return this.functionUrl;
 	}
 

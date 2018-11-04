@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,12 +34,10 @@ import org.jeecgframework.core.common.dao.IGenericBaseCommonDao;
 import org.jeecgframework.core.common.dao.jdbc.JdbcDao;
 import org.jeecgframework.core.common.exception.BusinessException;
 import org.jeecgframework.core.common.hibernate.qbc.CriteriaQuery;
-import org.jeecgframework.core.common.hibernate.qbc.DetachedCriteriaUtil;
 import org.jeecgframework.core.common.hibernate.qbc.HqlQuery;
 import org.jeecgframework.core.common.hibernate.qbc.PageList;
 import org.jeecgframework.core.common.hibernate.qbc.PagerUtil;
 import org.jeecgframework.core.common.model.common.DBTable;
-import org.jeecgframework.core.common.model.json.DataGridReturn;
 import org.jeecgframework.core.util.MyBeanUtils;
 import org.jeecgframework.core.util.StringUtil;
 import org.jeecgframework.core.util.ToEntityUtil;
@@ -682,7 +681,10 @@ public abstract class GenericBaseCommonDao<T, PK extends Serializable>
 		} else {
 			pageSize = allCounts;
 		}
-		DetachedCriteriaUtil.selectColumn(cq.getDetachedCriteria(), cq.getField().split(","), cq.getEntityClass(), false);
+
+		//DetachedCriteriaUtil.selectColumn(cq.getDetachedCriteria(), cq.getField().split(","), cq.getEntityClass(), false);
+
+		
 		return new DataTableReturn(allCounts, allCounts, cq.getDataTables().getEcho(), criteria.list());
 	}
 
@@ -696,34 +698,50 @@ public abstract class GenericBaseCommonDao<T, PK extends Serializable>
 		CriteriaImpl impl = (CriteriaImpl) criteria;
 		// 先把Projection和OrderBy条件取出来,清空两者来执行Count操作
 		Projection projection = impl.getProjection();
-		final int allCounts = ((Long) criteria.setProjection(Projections.rowCount()).uniqueResult()).intValue();
+
+//		final int allCounts = ((Long) criteria.setProjection(Projections.rowCount()).uniqueResult()).intValue();
+		Object allCountsObj = criteria.setProjection(Projections.rowCount()).uniqueResult();
+		final int allCounts;
+		if(allCountsObj==null){
+			allCounts = 0;
+		}else{
+			allCounts = ((Long) allCountsObj).intValue();
+		}
+
 		criteria.setProjection(projection);
 		if (projection == null) {
 			criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
 		}
 
-		if (StringUtils.isNotBlank(cq.getDataGrid().getSort())) {
-			String []sortArr = cq.getDataGrid().getSort().split(",");
+		Map<String, Object> ordermap = cq.getOrdermap();
+		if(ordermap==null){
+			ordermap = new LinkedHashMap<String, Object>();
+		}
+		
+		String sort = cq.getDataGrid().getSort();
+		if (StringUtils.isNotBlank(sort)) {
+			String []sortArr = sort.split(",");
 			String []orderArr = cq.getDataGrid().getOrder().split(",");
-			if(sortArr.length==orderArr.length){
-				for(int i=0;i<sortArr.length;i++){
-//					cq.addOrder(sortArr[i], SortDirection.toEnum(orderArr[i]));
-					if (SortDirection.asc.equals(SortDirection.toEnum(orderArr[i]))) {
-						cq.getDetachedCriteria().addOrder(Order.asc(sortArr[i]));
-					} else {
-						cq.getDetachedCriteria().addOrder(Order.desc(sortArr[i]));
+			if(sortArr.length != orderArr.length && orderArr.length > 0){
+				for (int i = 0; i < sortArr.length; i++) {
+					if(SortDirection.asc.equals(SortDirection.toEnum(orderArr[0]))){
+						ordermap.put(sortArr[i], SortDirection.asc);
+					}else{
+						ordermap.put(sortArr[i], SortDirection.desc);
 					}
 				}
-			}else if(orderArr.length>0){
-				for(int i=0;i<sortArr.length;i++){
-//					cq.addOrder(sortArr[i], SortDirection.toEnum(orderArr[0]));
-					if (SortDirection.asc.equals(SortDirection.toEnum(orderArr[0]))) {
-						cq.getDetachedCriteria().addOrder(Order.asc(sortArr[i]));
-					} else {
-						cq.getDetachedCriteria().addOrder(Order.desc(sortArr[i]));
+			}else if(sortArr.length == orderArr.length){
+				for (int i = 0; i < sortArr.length; i++) {
+					if(SortDirection.asc.equals(SortDirection.toEnum(orderArr[i]))){
+						ordermap.put(sortArr[i], SortDirection.asc);
+					}else{
+						ordermap.put(sortArr[i], SortDirection.desc);
 					}
 				}
 			}
+		}
+		if(!ordermap.isEmpty() && ordermap.size()>0){
+			cq.setOrder(ordermap);
 		}
 
 

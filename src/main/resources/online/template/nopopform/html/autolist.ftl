@@ -75,16 +75,19 @@ function createDataGrid${config_id}(){
 						 		}
 						 		if(value.indexOf(".jpg")>-1 || value.indexOf(".gif")>-1 || value.indexOf(".png")>-1){
 						 		<#-- update--begin--author:zhangjiaqiang date:20170606 for:TASK #2056 【上传附件功能】Online 一对多对上传组件支持 -->
-						 			href+="<img src='"+value+"' onmouseover='tipImg(this)' onmouseout='moveTipImg()' width=50 height=50/>";
+						 			href+="<img src='"+value+"' onmouseover='tipImg(this)' onmouseout='moveTipImg()' width=30 height=30/>";
 						 			<#-- update--begin--author:zhangjiaqiang date:20170606 for:TASK #2056 【上传附件功能】Online 一对多对上传组件支持 -->
 						 		}else{
 						 			<#-- //update-begin--Author:zhangjiaqiang  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
 						 			<#-- update--begin--author:zhangjiaqiang date:20170628 for: TASK #2194 【online链接样式切换】Online 功能测试的列表链接样式，需要根据浏览器IE进行切换 -->
+						 			<#-- update-begin- author:taoyan date:20181023 for:txt文件下载bug -->
+						 			var value2="systemController/downloadFile.do?filePath="+value
 						 			<#if brower_type?? && brower_type == 'Microsoft%20Internet%20Explorer'>
-						 			href+="[<a href='"+value+"' style='text-decoration:none;' target=_blank>点击下载</a>]";
+						 			href+="[<a href='"+value2+"' style='text-decoration:none;' target=_blank>点击下载</a>]";
 						 			<#else>
-						 			href+="<a href='"+value+"' class='ace_button' style='text-decoration:none;' target=_blank><u><i class='fa fa-download'></i>点击下载</u></a>";
+						 			href+="<a href='"+value2+"' class='ace_button' style='text-decoration:none;' target=_blank><u><i class='fa fa-download'></i>点击下载</u></a>";
 						 			</#if>
+						 			<#-- update-begin- author:taoyan date:20181023 for:txt文件下载bug -->
 						 			<#-- update--end--author:zhangjiaqiang date:20170628 for: TASK #2194 【online链接样式切换】Online 功能测试的列表链接样式，需要根据浏览器IE进行切换 -->
 						 			<#-- //update-begin--Author:zhangjiaqiang  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
 						 		}
@@ -117,12 +120,12 @@ function createDataGrid${config_id}(){
 						 			return href;
 						 		}
 						 		<#-- update--begin--author:zhangjiaqiang date:20170606 for:TASK #2056 【上传附件功能】Online 一对多对上传组件支持 -->
-						 		href+="<img src='"+value+"' width=100 height=50 onmouseover='tipImg(this)' onmouseout='moveTipImg()'/>";
+						 		href+="<img src='"+value+"' width=30 height=30 onmouseover='tipImg(this)' onmouseout='moveTipImg()'/>";
 						 		<#-- update--begin--author:zhangjiaqiang date:20170606 for:TASK #2056 【上传附件功能】Online 一对多对上传组件支持 -->
 						 		return href;
 						 	},
 						 	styler: function(value,row,index){
-								return 'text-align: center;';
+								return 'text-align: left;';
 						 	},
 						 	</#if>
 						 	<#-- update-end--Author: jg_huangxg  Date:20160113 for：TASK #824 【online开发】控件类型扩展增加一个图片类型 image -->
@@ -149,6 +152,11 @@ function createDataGrid${config_id}(){
 						</#if>
 						<#list config_buttons as x>
 							<#if x['buttonStyle'] == 'link' && x['buttonStatus']=='1' && config_noliststr?index_of("${x['buttonCode']}")==-1>
+								<#--update-begin--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
+									<#if x['exp'] != '' ||x['exp'] !=null>
+										if(<@exp exp="${ x['exp']}" data="rec" />){
+								 	 </#if>
+								 <#--update-end--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
 								<#-- //update-begin--Author:zhangdaihao  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
 								<#-- update--begin--author:zhangjiaqiang date:20170628 for: TASK #2194 【online链接样式切换】Online 功能测试的列表链接样式，需要根据浏览器IE进行切换 -->
 								<#if brower_type?? && brower_type == 'Microsoft%20Internet%20Explorer'>
@@ -186,6 +194,11 @@ function createDataGrid${config_id}(){
 								</#if>
 								<#-- update--end--author:zhangjiaqiang date:20170628 for: TASK #2194 【online链接样式切换】Online 功能测试的列表链接样式，需要根据浏览器IE进行切换 -->
 								<#-- //update-end--Author:zhangjiaqiang  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
+								<#--update-begin--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
+									<#if x['exp'] != '' ||x['exp'] !=null>
+										}
+								 	 </#if>
+								 <#--update-end--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
 							</#if>
 						</#list>
 						return href;
@@ -439,21 +452,24 @@ function createDataGrid${config_id}(){
 </script>
 <table width="100%"   id="${config_id}List" toolbar="#${config_id}Listtb"></table>
 <div id="${config_id}Listtb" style="padding:3px; height: auto">
-<div name="searchColums">
-<#--update--begin--author:zhangjiaqiang Date:20170507 for:修订页面回车查询异常 -->
-<form name="searchColumsForm" id="searchColumsForm" onkeydown="EnterPress(event);">
-<#--update--end--author:zhangjiaqiang Date:20170507 for:修订页面回车查询异常 -->
 <#if config_querymode == "group">
+	<div name="searchColums">
+	<form name="searchColumsForm" id="searchColumsForm" onkeydown="EnterPress(event);">
+	<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+<span style="max-width: 83%;display: inline-block;display:-moz-inline-box;">
+<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
 	<#list config_queryList  as x>
 		<#if x['field_isQuery']=="Y">
-		<span style="display:-moz-inline-box;display:inline-block;">
+		<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+		<span style="display:-moz-inline-box;display:inline-block;margin-bottom:2px;text-align:justify;">
+		<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
 		<span style="vertical-align:middle;display:-moz-inline-box;display:inline-block;width: 100px;text-align:right;text-align:right;text-overflow:ellipsis;-o-text-overflow:ellipsis; overflow: hidden;white-space:nowrap;" title="${x['field_title']}">${x['field_title']}：</span>
 		</#if>
 		<#if x['field_queryMode']=="group">
 			<#if x['field_isQuery']=="Y">
-			<input type="text" name="${x['field_id']}_begin"  style="width: 94px"  <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if> value="${x['field_value_begin']}" />
+			<input type="text" name="${x['field_id']}_begin"  style="width: 120px"  <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if> value="${x['field_value_begin']}" />
 			<span style="display:-moz-inline-box;display:inline-block;width: 8px;text-align:right;">~</span>
-			<input type="text" name="${x['field_id']}_end"  style="width: 94px" <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if> value="${x['field_value_end']}"/>
+			<input type="text" name="${x['field_id']}_end"  style="width: 120px" <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if> value="${x['field_value_end']}"/>
 			<#else>
 			<input type="hidden" name="${x['field_id']}_begin"   value="${x['field_value_begin']}"/>
 			<input type="hidden" name="${x['field_id']}_end"    value="${x['field_value_end']}"/>
@@ -462,8 +478,8 @@ function createDataGrid${config_id}(){
 		<#if x['field_queryMode']=="single">
 			<#if x['field_isQuery']=="Y">
 				<#if  (x['field_dictlist']?size >0)>
-					<select name = "${x['field_id']}"  style="width: 104px">
-					<option value = "">---请选择---</option>
+					<select name = "${x['field_id']}"  style="width: 120px">
+					<option value = ""></option>
 					<#list x['field_dictlist']  as xd>
 						<option value = "${xd['typecode']}">${xd['typename']}</option>
 					</#list>
@@ -471,11 +487,13 @@ function createDataGrid${config_id}(){
 				</#if>
 				<#if  (x['field_dictlist']?size <= 0)>
 					<#if x['field_showType']!='popup'>
-					<input type="text" name="${x['field_id']}" style="width: 100px" <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if>  value="${x['field_value']?if_exists?default('')}" />
+					<input type="text" name="${x['field_id']}" style="width: 120px" <#if x['field_type']=="Date">class="Wdate" onclick="WdatePicker({dateFmt:'yyyy-MM-dd'});"</#if>  value="${x['field_value']?if_exists?default('')}" />
 					<#else>
-					<input type="text" name="${x['field_id']}"  style="width: 100px" 
+					<input type="text" name="${x['field_id']}"  style="width: 120px" 
 									class="searchbox-inputtext" value="${x['field_value']?if_exists?default('')}"
-							       onClick="inputClick(this,'${x['field_dictField']?if_exists?html}','${x['field_dictTable']?if_exists?html}');" />
+							       <#--update--begin--author:gj_shaojc date:20180316 for:TASK #2557 【问题确认】网友问题确认 -->
+							       onClick="popupClick(this,'${x['field_dictText']?if_exists?html}','${x['field_dictField']?if_exists?html}','${x['field_dictTable']?if_exists?html}');" />
+									<#--update--end--author:gj_shaojc date:20180316 for:TASK #2557 【问题确认】网友问题确认 -->
 					</#if>
 				</#if>
 			<#else>
@@ -484,10 +502,22 @@ function createDataGrid${config_id}(){
 		</#if>
 		</span>	
 	</#list>
-</#if>
-</form>
+	<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+	</span>
+	<#if  (config_queryList?size >0)>
+	<#if config_querymode == "group" >
+		<span style="float:right">
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="${config_id}Listsearch()">查询</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reload" onclick="${config_id}searchReset('${config_id}List')">重置</a>
+		</span>
+	</#if>
+	</#if>
+	<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+	</form>
 	</div>
-	<div style="height:30px;" class="datagrid-toolbar">
+</#if>
+
+	<div class="datagrid-toolbar">
 	<span style="float:left;" >
 	
 	<a  id="add" href="javascript:void(0)"  class="easyui-linkbutton" plain="true"  icon="icon-add" onclick="${config_id}add()">录入</a>
@@ -510,12 +540,6 @@ function createDataGrid${config_id}(){
 	</span>
 	
 <#if  (config_queryList?size >0)>
-	<#if config_querymode == "group" >
-		<span style="float:right">
-			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="${config_id}Listsearch()">查询</a>
-			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reload" onclick="${config_id}searchReset('${config_id}List')">重置</a>
-		</span>
-	</#if>
 	<#if config_querymode == "single">
 		<span style="float:right">
 		<input id="${config_id}Listsearchbox" class="easyui-searchbox"  data-options="searcher:${config_id}Listsearchbox,prompt:'请输入关键字',menu:'#${config_id}Listmm'"></input>

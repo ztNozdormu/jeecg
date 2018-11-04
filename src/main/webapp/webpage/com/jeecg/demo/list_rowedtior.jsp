@@ -1,8 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@include file="/context/mytags.jsp"%>
-<!-- update-begin-author:taoYan date:20170814 for:行编辑ie8兼容问题 -->
 <t:base type="jquery-webos,easyui,tools,DatePicker,autocomplete"></t:base>
-<!-- update-end-author:taoYan date:20170814 for:行编辑ie8兼容问题 -->
 <div class="easyui-layout" fit="true">
   <div region="center" style="padding:0px;border:0px">
   <t:datagrid name="jeecgrowList"  checkbox="true" pagination="true" fitColumns="true" 
@@ -13,13 +11,13 @@
     <t:dgCol title="生日"  field="birthday" formatter="yyyy-MM-dd"  extendParams="editor:'datebox'" width="150"></t:dgCol>
     <t:dgCol title="性别"  field="sex"  query="true" dictionary="sex" extendParams="editor:'combobox'" width="100"></t:dgCol>
     <t:dgCol title="工资"  field="salary"  queryMode="group" extendParams="editor:'numberbox'" width="100"></t:dgCol>
-     <t:dgCol title="入职状态"  field="status" query="true" dictionary="sf_yn" extendParams="editor:'combobox'" width="100"></t:dgCol>
+    <t:dgCol title="入职状态"  field="status" query="true" dictionary="sf_yn" extendParams="editor:'combobox'" width="100"></t:dgCol>
     <t:dgCol title="个人介绍"  field="content"  hidden="true"   queryMode="group"  width="500" extendParams="editor:'text'" ></t:dgCol>
   
-    <t:dgToolBar operationCode="add" title="录入" icon="icon-add"  funname="addRow"></t:dgToolBar>
-	<t:dgToolBar operationCode="edit" title="编辑" icon="icon-edit"  funname="editRow"></t:dgToolBar>
-	<t:dgToolBar operationCode="save" title="保存" icon="icon-save" url="jeecgListDemoController.do?saveRows" funname="saveData"></t:dgToolBar>
-	<t:dgToolBar operationCode="undo" title="取消编辑" icon="icon-undo" funname="reject"></t:dgToolBar>
+    <t:dgToolBar  title="录入" icon="icon-add"  funname="addRow"></t:dgToolBar>
+	<t:dgToolBar  title="编辑" icon="icon-edit"  funname="editRow"></t:dgToolBar>
+	<t:dgToolBar  title="保存" icon="icon-save" url="jeecgListDemoController.do?saveRows" funname="saveData"></t:dgToolBar>
+	<t:dgToolBar  title="取消编辑" icon="icon-undo" funname="reject"></t:dgToolBar>
 	 <t:dgToolBar title="批量删除"  icon="icon-remove" url="jeecgListDemoController.do?doBatchDel" funname="deleteALLSelect"></t:dgToolBar>
   </t:datagrid>
   </div>
@@ -69,9 +67,7 @@
 			if($('#'+gname).datagrid('validateRow', i)){
 				$('#'+gname).datagrid('endEdit', i);
 			}else{
-
 				tip("请选择必填项(带有红色三角形状的字段)!");
-
 				return false;
 			}
 		}
@@ -89,7 +85,6 @@
 			$('#'+gname).datagrid('beginEdit', index);
 		}
 	}
-
 	//取消编辑
 	function reject(title,addurl,gname){
 		$('#'+gname).datagrid('clearChecked');

@@ -2,6 +2,7 @@ package org.jeecgframework.core.common.hibernate.qbc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import org.hibernate.transform.Transformers;
 import org.hibernate.type.Type;
 import org.jeecgframework.core.common.model.json.DataGrid;
 import org.jeecgframework.core.util.StringUtil;
+import org.jeecgframework.core.util.oConvertUtils;
 import org.jeecgframework.tag.vo.datatable.DataTables;
 import org.jeecgframework.tag.vo.datatable.SortDirection;
 import org.jeecgframework.tag.vo.datatable.SortInfo;
@@ -39,8 +41,8 @@ public class CriteriaQuery {
 	private CriterionList jqcriterionList=new CriterionList();//jquery datatable控件生成查询条件集合
 	private int isUseimage = 0;// 翻页工具条样式
 	private DetachedCriteria detachedCriteria;
-	private static Map<String, Object> map;
-	private static Map<String, Object> ordermap;//排序字段
+	private Map<String, Object> map;
+	private Map<String, Object> ordermap;//排序字段
 	private boolean flag = true;// 对同一字段进行第二次重命名查询时值设置FASLE不保存重命名查询条件
 	private String field="";//查询需要显示的字段
 	private Class<?> entityClass;//POJO
@@ -100,7 +102,9 @@ public class CriteriaQuery {
 	public CriteriaQuery(Class<?> c) {
 		this.detachedCriteria = DetachedCriteria.forClass(c);
 		this.map = new HashMap<String, Object>();
-		this.ordermap = new HashMap<String, Object>();
+
+		this.ordermap = new LinkedHashMap<String, Object>();
+
 	}
 
 	public CriteriaQuery(Class<?> c, int curPage, String myAction, String myForm) {
@@ -115,7 +119,9 @@ public class CriteriaQuery {
 		this.curPage = curPage;
 		this.detachedCriteria = DetachedCriteria.forClass(c);
 		this.map = new HashMap<String, Object>();
-		this.ordermap = new HashMap<String, Object>();
+
+		this.ordermap = new LinkedHashMap<String, Object>();
+
 	}
 
 	public CriteriaQuery(Class<?> entityClass, int curPage) {
@@ -136,20 +142,28 @@ public class CriteriaQuery {
 		this.dataGrid=dg;
 		this.pageSize=dg.getRows();
 		this.map = new HashMap<String, Object>();
-		this.ordermap = new HashMap<String, Object>();
+
+		this.ordermap = new LinkedHashMap<String, Object>();
+
 	}
+	
+//	 【scott 20180526 删除无用代码|xwork-core】
 	public CriteriaQuery(Class entityClass,DataTables dataTables) {
 		this.curPage = dataTables.getDisplayStart();
 		String[] fieldstring=dataTables.getsColumns().split(",");
-		this.detachedCriteria = DetachedCriteriaUtil
-		.createDetachedCriteria(entityClass, "start", "_table",fieldstring);
-		//this.detachedCriteria = DetachedCriteria.forClass(c);
+
+		this.detachedCriteria = DetachedCriteria.forClass(entityClass);
+		//this.detachedCriteria = DetachedCriteriaUtil.createDetachedCriteria(entityClass, "start", "_table",fieldstring);
+
+		
 		this.field=dataTables.getsColumns();
 		this.entityClass=entityClass;
 		this.dataTables=dataTables;
 		this.pageSize=dataTables.getDisplayLength();
 		this.map = new HashMap<String, Object>();
-		this.ordermap = new HashMap<String, Object>();
+
+		this.ordermap = new LinkedHashMap<String, Object>();
+
 		addJqCriteria(dataTables);
 	}
 
@@ -396,12 +410,12 @@ public class CriteriaQuery {
 		}
 	}
 
-	public static Map<String, Object> getOrdermap() {
+	public Map<String, Object> getOrdermap() {
 		return ordermap;
 	}
 
-	public static void setOrdermap(Map<String, Object> ordermap) {
-		CriteriaQuery.ordermap = ordermap;
+	public void setOrdermap(Map<String, Object> ordermap) {
+		this.ordermap = ordermap;
 	}
 
 	/**
@@ -583,11 +597,11 @@ public class CriteriaQuery {
 	public void between(String keyname, Object keyvalue1, Object keyvalue2) {
 		Criterion c = null;// 写入between查询条件
 
-		if (!keyvalue1.equals(null) && !keyvalue2.equals(null)) {
+		if (oConvertUtils.isNotEmpty(keyvalue1) && oConvertUtils.isNotEmpty(keyvalue2)) {
 			c = Restrictions.between(keyname, keyvalue1, keyvalue2);
-		} else if (!keyvalue1.equals(null)) {
+		} else if (oConvertUtils.isNotEmpty(keyvalue1)) {
 			c = Restrictions.ge(keyname, keyvalue1);
-		} else if (!keyvalue2.equals(null)) {
+		} else if (oConvertUtils.isNotEmpty(keyvalue2)) {
 			c = Restrictions.le(keyname, keyvalue2);
 		}
 		criterionList.add(c);

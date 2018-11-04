@@ -8,14 +8,8 @@
  </head>
  <body>
 		<t:formvalid formid="formobj" dialog="true" usePlugin="password" layout="table" action="jeecgListDemoController.do?doUpdate" >
-					<input id="id" name="id" type="hidden" value="${jeecgDemoPage.id }">
-					<input id="createDate" name="createDate" type="hidden" value="${jeecgDemoPage.createDate }">
-					<input id="createBy" name="createBy" type="hidden" value="${jeecgDemoPage.createBy }">
-					<input id="createName" name="createName" type="hidden" value="${jeecgDemoPage.createName }">
-					<input id="updateBy" name="updateBy" type="hidden" value="${jeecgDemoPage.updateBy }">
-					<input id="updateDate" name="updateDate" type="hidden" value="${jeecgDemoPage.updateDate }">
-					<input id="updateName" name="updateName" type="hidden" value="${jeecgDemoPage.updateName }">
-		<table style="width: 600px;" cellpadding="0" cellspacing="1" class="formtable">
+		<input id="id" name="id" type="hidden" value="${jeecgDemoPage.id }">
+		<table style="width: 90%;" cellpadding="0" cellspacing="1" class="formtable">
 					<tr>
 						<td align="right">
 							<label class="Validform_label">
@@ -97,7 +91,7 @@
 							</label>
 						</td>
 						<td class="value">
-						     	 <input id="salary" name="salary" type="text" style="width: 150px" class="inputxt"  value='${jeecgDemoPage.salary}'>
+						     	 <input id="salary" name="salary" type="text" style="width: 150px" class="inputxt"  value='${jeecgDemoPage.salary}' datatype="d" />
 							<span class="Validform_checktip"></span>
 							<label class="Validform_label" style="display: none;">工资</label>
 						</td>
@@ -135,7 +129,7 @@
 						</label>
 					</td>
 					<td class="value">
-						<t:webUploader type="image" displayTxt="false" bizType="photosucai" name="touxiang" auto="false" pathValues="${jeecgDemoPage.touxiang}" dataType="*" nullMsg="请选择头像(自定义提示信息)"></t:webUploader>
+						<t:webUploader type="image" displayTxt="false" bizType="photosucai" name="touxiang" auto="false" pathValues="${jeecgDemoPage.touxiang}" datatype="*" nullMsg="请选择头像(自定义提示信息)"></t:webUploader>
 					</td>
 				</tr>
 				
@@ -146,7 +140,7 @@
 						</label>
 					</td>
 					<td class="value">
-						<t:webUploader auto="true" pathValues="${jeecgDemoPage.fujian}" name="fujian" duplicate="true" fileNumLimit="3" dataType="*" nullMsg="请选择附件(自定义提示信息)"></t:webUploader>
+						<t:webUploader auto="true" pathValues="${jeecgDemoPage.fujian}" name="fujian" duplicate="true" fileNumLimit="3" datatype="*" nullMsg="请选择附件(自定义提示信息)"></t:webUploader>
 					</td>
 				</tr>
 					<tr>
@@ -158,7 +152,7 @@
 						<td class="value">
 									<script type="text/javascript"  charset="utf-8" src="plug-in/ueditor/ueditor.config.js"></script>
 									<script type="text/javascript"  charset="utf-8" src="plug-in/ueditor/ueditor.all.min.js"></script>
-							    	<textarea name="content" readonly="true" id="content" style="width: 650px;height:300px">${jeecgDemoPage.content}</textarea>
+							    	<textarea name="content" readonly="true" id="content" style="width: 100%;height:300px">${jeecgDemoPage.content}</textarea>
 								    <script type="text/javascript">
 								        var editor = UE.getEditor('content');
 								    </script>

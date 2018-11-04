@@ -1,8 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@include file="/context/mytags.jsp"%>
-<!-- update-begin--Author:xuelin  Date:20170331 for：[#1714]【功能】角色分配菜单权限的时候，权限树采用ztree重写，不再采用easyui的树   新增 引入ztree插件包-------------------- -->
 <t:base type="jquery,easyui,tools,DatePicker,ztree"></t:base>
-<!-- update-end--Author:xuelin  Date:20170331 for：[#1714]【功能】角色分配菜单权限的时候，权限树采用ztree重写，不再采用easyui的树    新增引入ztree插件包---------------------- -->	
 <div class="easyui-layout" fit="true">
 <div region="center" style="padding:0px;border:0px">
 <t:datagrid name="roleList" title="common.role.list" actionUrl="roleController.do?roleGrid" fitColumns="true"  idField="id" sortName="id" sortOrder="desc" queryMode="group" btnCls="bootstrap">
@@ -22,6 +20,7 @@
 	<t:dgToolBar title="excelImport" icon="fa fa-arrow-circle-left" funname="ImportXls"></t:dgToolBar>
 	<t:dgToolBar title="excelOutput" icon="fa fa-arrow-circle-right" funname="ExportXls"></t:dgToolBar>
 	<t:dgToolBar title="templateDownload" icon="fa fa-arrow-circle-o-down" funname="ExportXlsByT"></t:dgToolBar>
+	<t:dgToolBar title="重置用户权限缓存" icon="fa  fa-refresh" funname="refresh"></t:dgToolBar>
 </t:datagrid></div>
 </div>
 <div region="east" style="width: 600px;" split="true">
@@ -76,5 +75,26 @@ function ExportXls() {
 //模板下载
 function ExportXlsByT() {
 	JeecgExcelExport("roleController.do?exportXlsByT", "roleList");
+}
+
+//模板下载
+function refresh() {
+	$.ajax({
+		async : false,
+		cache : false,
+		type : 'POST',
+		url : 'roleController.do?refresh',
+		error : function() {
+		},
+		success : function(data) {
+			var d = $.parseJSON(data);
+			if (d.success) {
+				var msg = d.msg;
+				tip(msg);
+			} else {
+				tip(d.msg);
+			}
+		}
+	});
 }
 </script>

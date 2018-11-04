@@ -107,6 +107,11 @@ function createDataGrid${config_id}(){
 						</#if>
 						<#list config_buttons as x>
 							<#if x['buttonStyle'] == 'link' && x['buttonStatus']=='1' && config_noliststr?index_of("${x['buttonCode']}")==-1>
+								<#--update-begin--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
+									<#if x['exp'] != '' ||x['exp'] !=null>
+										if(<@exp exp="${ x['exp']}" data="rec" />){
+								 	 </#if>
+								<#--update-end--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
 								<#-- //update-begin--Author:zhangjiaqiang  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
 								href+="<a style='margin-left:5px;' href='javascript:void(0)' class='ace_button' buttonCode='${x['buttonCode']}' formId ='${x['formId']}' ";
 								<#if x['optType'] == 'action'>
@@ -137,6 +142,11 @@ function createDataGrid${config_id}(){
 								</#if>
 								<#-- update--end--author:zhangjiaqiang date:20170628 for: TASK #2194 【online链接样式切换】Online 功能测试的列表链接样式，需要根据浏览器IE进行切换 -->
 								<#-- //update-end--Author:zhangjiaqiang  Date:20160925 for：TASK #1344 [链接图标] online功能测试的按钮链接图标修改 -->
+								<#--update-begin--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
+									<#if x['exp'] != '' ||x['exp'] !=null>
+										}
+								 	 </#if>
+						 		<#--update-end--Author:gj_shaojc  Date:20180606 for：TASK #2753 【论坛问题确认】online 开发，自定义按钮显示表达式问题-->
 							</#if>
 						</#list>
 						return href;
@@ -363,9 +373,14 @@ function createDataGrid${config_id}(){
 <div id="${config_id}Listtb" style="padding:3px; height: auto">
 <div name="searchColums">
 <#if config_querymode == "group">
+<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+<span style="max-width: 83%;display: inline-block;display:-moz-inline-box;">
+<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
 	<#list config_queryList  as x>
 		<#if x['field_isQuery']=="Y">
-		<span style="display:-moz-inline-box;display:inline-block;">
+		<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+		<span style="display:-moz-inline-box;display:inline-block;margin-bottom:2px;text-align:justify;">
+		<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
 		<span style="vertical-align:middle;display:-moz-inline-box;display:inline-block;width: 100px;text-align:right;text-align:right;text-overflow:ellipsis;-o-text-overflow:ellipsis; overflow: hidden;white-space:nowrap;" title="${x['field_title']}">${x['field_title']}：</span>
 		</#if>
 		<#if x['field_queryMode']=="group">
@@ -382,7 +397,7 @@ function createDataGrid${config_id}(){
 			<#if x['field_isQuery']=="Y">
 				<#if  (x['field_dictlist']?size >0)>
 					<select name = "${x['field_id']}"  style="width: 104px">
-					<option value = "">---请选择---</option>
+					<option value = ""></option>
 					<#list x['field_dictlist']  as xd>
 						<option value = "${xd['typecode']}">${xd['typename']}</option>
 					</#list>
@@ -394,7 +409,9 @@ function createDataGrid${config_id}(){
 					<#else>
 					<input type="text" name="${x['field_id']}"  style="width: 100px" 
 									class="searchbox-inputtext" value="${x['field_value']?if_exists?default('')}"
-							       onClick="inputClick(this,'${x['field_dictField']?if_exists?html}','${x['field_dictTable']?if_exists?html}');" />
+							       <#--update--begin--author:gj_shaojc date:20180316 for:TASK #2557 【问题确认】网友问题确认 -->
+							       onClick="popupClick(this,'${x['field_dictText']?if_exists?html}','${x['field_dictField']?if_exists?html}','${x['field_dictTable']?if_exists?html}');" />
+									<#--update--end--author:gj_shaojc date:20180316 for:TASK #2557 【问题确认】网友问题确认 -->
 					</#if>
 				</#if>
 			<#else>
@@ -403,6 +420,17 @@ function createDataGrid${config_id}(){
 		</#if>
 		</span>	
 	</#list>
+	<#--update--begin--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
+	</span>
+	<#if  (config_queryList?size >0)>
+	<#if config_querymode == "group" >
+		<span style="float:right">
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="${config_id}Listsearch()">查询</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reload" onclick="${config_id}searchReset('${config_id}List')">重置</a>
+		</span>
+	</#if>
+	</#if>
+	<#--update--end--author:zhangjiaqiang date:20171115 for:TASK #2420 【online功能】查询按钮位置调整 -->
 </#if>
 	</div>
 	<div style="height:30px;" class="datagrid-toolbar">
@@ -428,12 +456,6 @@ function createDataGrid${config_id}(){
 	</span>
 	
 <#if  (config_queryList?size >0)>
-	<#if config_querymode == "group" >
-		<span style="float:right">
-			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="${config_id}Listsearch()">查询</a>
-			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reload" onclick="${config_id}searchReset('${config_id}List')">重置</a>
-		</span>
-	</#if>
 	<#if config_querymode == "single">
 		<span style="float:right">
 		<input id="${config_id}Listsearchbox" class="easyui-searchbox"  data-options="searcher:${config_id}Listsearchbox,prompt:'请输入关键字',menu:'#${config_id}Listmm'"></input>

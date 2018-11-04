@@ -11,7 +11,7 @@ import java.io.IOException;
 
 /**
  * 
- * 部门选择弹出框
+ * 用户选择弹出组件
  * 
  * @author: wangkun
  * @date： 日期：2015-3-27
@@ -162,22 +162,22 @@ public class UserSelectTag extends TagSupport {
 		if(hasLabel && oConvertUtils.isNotEmpty(title)){
 			sb.append(title + "：");
 		}
-		sb.append("<input readonly=\""+readonly+"\" type=\"text\" id=\"" + selectedNamesInputId + "\" name=\"" + selectedNamesInputId + "\" style=\"width: "+inputWidth+"\" onclick=\"openUserSelect()\" ");
+		sb.append("<input class=\"inuptxt\" readonly=\""+readonly+"\" type=\"text\" id=\"" + selectedNamesInputId + "\" name=\"" + selectedNamesInputId + "\" style=\"width: "+inputWidth+"\" onclick=\"openUserSelect()\" ");
 		if(StringUtils.isNotBlank(userNamesDefalutVal)){
 			sb.append(" value=\""+userNamesDefalutVal+"\"");
 		}
 		sb.append(" />");
 		
 		if(oConvertUtils.isNotEmpty(selectedIdsInputId)){
-			sb.append("<input id=\"" + selectedIdsInputId + "\" name=\"" + selectedIdsInputId + "\" type=\"hidden\" ");
+			sb.append("<input class=\"inuptxt\" id=\"" + selectedIdsInputId + "\" name=\"" + selectedIdsInputId + "\" type=\"hidden\" ");
 			if(StringUtils.isNotBlank(userIdsDefalutVal)){
 				sb.append(" value=\""+userIdsDefalutVal+"\"");
 			}
 			sb.append("/>");
 		}
 		
-		String commonConfirm = MutiLangUtil.getMutiLangInstance().getLang("common.confirm");
-		String commonCancel = MutiLangUtil.getMutiLangInstance().getLang("common.cancel");
+		String commonConfirm = MutiLangUtil.getLang("common.confirm");
+		String commonCancel = MutiLangUtil.getLang("common.cancel");
 		
 		sb.append("<script type=\"text/javascript\">");
 		sb.append("function openUserSelect() {");

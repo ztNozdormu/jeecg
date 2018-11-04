@@ -1,12 +1,10 @@
 package org.jeecgframework.web.system.controller.core;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.client.ClientProtocolException;
 import org.jeecgframework.core.common.controller.BaseController;
 import org.jeecgframework.core.common.hibernate.qbc.CriteriaQuery;
 import org.jeecgframework.core.common.model.json.AjaxJson;
@@ -21,7 +19,7 @@ import org.jeecgframework.tag.core.easyui.TagUtil;
 import org.jeecgframework.web.system.pojo.base.TSTimeTaskEntity;
 import org.jeecgframework.web.system.service.SystemService;
 import org.jeecgframework.web.system.service.TimeTaskServiceI;
-import org.quartz.CronTrigger;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +44,7 @@ public class TimeTaskController extends BaseController {
 
 	@Autowired
 	private TimeTaskServiceI timeTaskService;
-	@Autowired
+	@Autowired(required=false)
 	private DynamicTask dynamicTask;
 	@Autowired
 	private SystemService systemService;
@@ -114,7 +112,9 @@ public class TimeTaskController extends BaseController {
 	public AjaxJson save(TSTimeTaskEntity timeTask, HttpServletRequest request) {
 		String message = null;
 		AjaxJson j = new AjaxJson();
-		CronTrigger trigger = new CronTrigger();
+
+		CronTriggerImpl trigger = new CronTriggerImpl();
+
 		try {
 			trigger.setCronExpression(timeTask.getCronExpression());
 		} catch (ParseException e) {
@@ -203,22 +203,16 @@ public class TimeTaskController extends BaseController {
 		List<String> ipList = IpUtil.getLocalIPList();
 		String runServerIp = timeTask.getRunServerIp();
 
-		if(ipList.contains(runServerIp) || StringUtil.isEmpty(runServerIp) || "本地".equals(runServerIp)){//当前服务器IP匹配成功
+		if((ipList.contains(runServerIp) || StringUtil.isEmpty(runServerIp) || "本地".equals(runServerIp)) && (runServerIp.equals(timeTask.getRunServer()))){//当前服务器IP匹配成功
 
 			isSuccess = dynamicTask.startOrStop(timeTask ,isStart);	
 		}else{
 			try {
 				String url = "http://"+timeTask.getRunServer()+"/timeTaskController.do?remoteTask";//spring-mvc.xml
 				String param = "id="+timeTask.getId()+"&isStart="+(isStart ? "1" : "0");
-				String jsonstr = HttpRequest.httpPost(url, param, false);
-				if (null != jsonstr && jsonstr.length() > 0) {
-					JSONObject json = (JSONObject) JSONObject.parse(jsonstr);
-					isSuccess = json.getBooleanValue("success");
-				}
-			} catch (ClientProtocolException e) {
-				j.setMsg("远程主机‘"+timeTask.getRunServer()+"’响应超时");
-				return j;
-			} catch (IOException e) {
+				JSONObject json = HttpRequest.sendPost(url, param);
+				isSuccess = json.getBooleanValue("success");
+			} catch (Exception e) {
 				j.setMsg("远程主机‘"+timeTask.getRunServer()+"’响应超时");
 				return j;
 			}
@@ -247,7 +241,15 @@ public class TimeTaskController extends BaseController {
 		}else if (!isStart && "0".equals(timeTask.getIsStart())) {
 			isSuccess = false;
 		}else{
-			isSuccess = dynamicTask.startOrStop(timeTask ,isStart);	
+
+			try {
+				isSuccess = dynamicTask.startOrStop(timeTask ,isStart);
+			} catch (Exception e) {
+				e.printStackTrace();
+				json.put("success", false);
+				return json;
+			}
+
 		}
 		json.put("success", isSuccess);
 		return json;

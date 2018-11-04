@@ -1,10 +1,14 @@
     
     
     <!-- tab内容 -->
-    <div class="con-wrapper" id="con-wrapper${sub_index + 1}" style="display: none;">
+    <!-- update-begin-Author:zhangweijian  Date: 20180709 for：#2919 online样式问题 -->
+    <div class="con-wrapper" id="con-wrapper${sub_index + 1}" style="display: none">
+    <!-- update-end-Author:zhangweijian  Date: 20180709 for：#2919 online样式问题 -->
 	    <!-- <h4>分类标题</h4> -->
 	    <div class="row">
-	      <div class="col-md-12 layout-header">
+	    <#-- update--begin--author:taoyan Date:20170601 for:TASK #2731 【bug】uploadify上传控件被隐藏导致上传失败 -->
+	      <div style="margin-left:15px;">
+	    <#-- update--end--author:taoyan Date:20170601 for:TASK #2731 【bug】uploadify上传控件被隐藏导致上传失败 -->
 	        <button id="addBtn_${sub}" type="button" class="btn btn-default">添加</button>
 	        <button id="delBtn_${sub}" type="button" class="btn btn-default">删除</button>
 	        <script type="text/javascript"> 
@@ -15,7 +19,7 @@
 			 	 return false;
 		    });  
 			$('#delBtn_${sub}').bind('click', function(){   
-		       $("#add_${sub}_table").find("input:checked").parent().parent().remove();   
+		       $("#add_${sub}_table").find("input[name$='ck']:checked").parent().parent().remove();   
 		        resetTrNum('add_${sub}_table');
 		        return false;
 		    });
@@ -32,11 +36,11 @@
 		    });
 		</script>
 	      </div>
-	    </div>
-	<div style="margin: 0 15px; background-color: white;">    
+<!-- update-begin-Author:zhangweijian  Date: 20180709 for：#2919 online样式问题 -->	    
+	<div style="margin: 0 15px; background-color: white;overflow-x:auto">    
 	    <!-- Table -->
       <table id="${sub}_table" class="table table-bordered table-hover" style="margin-bottom: 0;">
-        <thead>
+        <thead style="background: #fff">
           <tr>
             <th style="white-space:nowrap;width:50px;">序号</th>
             <th style="white-space:nowrap;width:50px;">操作</th>
@@ -45,7 +49,8 @@
 			</#list>
           </tr>
         </thead>
-        <tbody id="add_${sub}_table">
+        <tbody id="add_${sub}_table" style="background: #fff">
+<!-- update-end-Author:zhangweijian  Date: 20180709 for：#2919 online样式问题 -->
           <#if data['${sub}']?exists&&(data['${sub}']?size>0) >
 								<#list data['${sub}'] as subTableData >
 									<tr>
@@ -68,7 +73,12 @@
 								<#if subTableField.field_must_input?if_exists?html != ''><#if subTableField.field_must_input == 'Y' || subTableField.is_null != 'Y'>ignore="checked"<#else>ignore="ignore"</#if><#elseif subTableField.is_null != 'Y'> ignore="checked"<#else>ignore="ignore"</#if>
 								<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 								               <#if subTableField.field_valid_type?if_exists?html != ''>
-								               datatype="${subTableField.field_valid_type?if_exists?html}"
+								               <#if subTableField.field_valid_type=='only'>
+					       		   					validType="${sub},${subTableField.field_name},${sub}[${subTableData_index}].id"
+					       		   					datatype="*"
+					       						<#else>
+				                   					datatype="${subTableField.field_valid_type?if_exists?html}"
+				               					</#if>
 								               <#else>
 								               <#if subTableField.type == 'int'>
 								               datatype="n" 
@@ -198,7 +208,9 @@
 												<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 								               <#if subTableField.operationCodesReadOnly?if_exists> readonly = "readonly"
 								               <#else>
-								               onClick="inputClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
+								               <#-- update--begin--author:baiyu Date:20171031 for:popupClick支持返回多个字段 -->
+								               onClick="popupClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_field?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
+								               <#-- update--end--author:baiyu Date:20171031 for:popupClick支持返回多个字段 -->
 								               </#if>
 								               <#if subTableField.field_valid_type?if_exists?html != ''>
 								               datatype="${subTableField.field_valid_type?if_exists?html}"
@@ -223,10 +235,9 @@
 								               <#else>
 				               					<#if subTableField.is_null != 'Y'>datatype="*"</#if>
 								               </#if>>
-								                  <a  target="_blank" id="${sub}[${subTableData_index}].${subTableField.field_name}_href"  <#if subTableData['${subTableField.field_name}']?if_exists?html != ''>href="${subTableData['${subTableField.field_name}']?if_exists?html}">下载<#else>>未上传</#if></a>
-											  <br>
-											   <input class="form-control" type="button" value="上传附件"
+											   <input class="ui-button" type="button" value="上传附件"
 															onclick="commonUpload(commonUploadDefaultCallBack,'${sub}[${subTableData_index}].${subTableField.field_name}')"/>
+								                  <a  target="_blank" id="${sub}[${subTableData_index}].${subTableField.field_name}_href"  <#if subTableData['${subTableField.field_name}']?if_exists?html != ''>href="${subTableData['${subTableField.field_name}']?if_exists?html}">下载<#else>></#if></a>
 										<#-- update--end--author:zhangjiaqiang date:20170607 for:增加对于图片的支持 -->
 									<#else>
 										<input id="${sub}[${subTableData_index}].${subTableField.field_name}" ${subTableField.extend_json?if_exists} name="${sub}[${subTableData_index}].${subTableField.field_name}" type="text"
@@ -272,7 +283,12 @@
 												<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 								               <#if subTableField.operationCodesReadOnly?exists> readonly = "readonly"</#if>
 								               <#if subTableField.field_valid_type?if_exists?html != ''>
-								               datatype="${subTableField.field_valid_type?if_exists?html}"
+								               <#if subTableField.field_valid_type=='only'>
+					       		   					validType="${sub},${subTableField.field_name},${sub}[${subTableData_index}].id"
+					       		   					datatype="*"
+					       						<#else>
+				                   					datatype="${subTableField.field_valid_type?if_exists?html}"
+				               					</#if>
 								               <#else>
 								               <#if subTableField.type == 'int'>
 								               datatype="n" 
@@ -397,7 +413,9 @@
 											<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 								               <#if subTableField.operationCodesReadOnly?if_exists> readonly = "readonly"
 								               <#else>
-										       onClick="inputClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
+								               <#-- update--begin--author:baiyu Date:20171031 for:popupClick支持返回多个字段 -->
+										       onClick="popupClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_field?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
+										       <#-- update--end--author:baiyu Date:20171031 for:popupClick支持返回多个字段 -->
 								               </#if>
 								               <#if subTableField.field_valid_type?if_exists?html != ''>
 								               datatype="${subTableField.field_valid_type?if_exists?html}"
@@ -418,10 +436,9 @@
 								               <#else>
 					               				<#if subTableField.is_null != 'Y'>datatype="*"</#if>
 								               </#if>>
-								           <a  target="_blank" id="${sub}[0].${subTableField.field_name}_href">未上传</a>
-											  <br>
-										<input class="form-control" type="button" value="上传附件"
+										<input class="ui-button" type="button" value="上传附件"
 															onclick="commonUpload(commonUploadDefaultCallBack,'${sub}[0].${subTableField.field_name}')"/>
+								           <a  target="_blank" id="${sub}[0].${subTableField.field_name}_href"></a>
 										<#-- update--end--author:zhangjiaqiang date:20170607 for:增加对于图片文件的支持 -->
 									<#else>
 										<input id="${sub}[0].${subTableField.field_name}" ${subTableField.extend_json?if_exists} name="${sub}[0].${subTableField.field_name}" type="text"
@@ -450,7 +467,7 @@
       </table>
 	 </div>   
 	    
-	    
+	</div> 
     </div>
     
     

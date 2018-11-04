@@ -7,7 +7,6 @@
 <t:base type="jquery,easyui,tools,DatePicker"></t:base>
 </head>
 <body style="overflow-y: hidden" scroll="no">
-<!-- update-begin-Author:xuelin  Date:20170820 for：TASK #1742 【新功能】定时任务配置  -->
 <t:formvalid formid="formobj" dialog="true" usePlugin="password" layout="div" action="timeTaskController.do?save">
 	<input id="id" name="id" type="hidden" value="${timeTaskPage.id }">
 	<input id="isEffect" name="isEffect" type="hidden" value="${(empty timeTaskPage.isEffect)?0:timeTaskPage.isEffect}">
@@ -25,15 +24,18 @@
 	</div>
 	<div class="form">
 		<label class="Validform_label"><t:mutiLang langKey="cron.expression"/>:</label> 
-		<input class="inputxt" id="cronExpression" name="cronExpression" value="${timeTaskPage.cronExpression}" datatype="*" style="width:50%"/> 
+		<input class="inputxt" id="cronExpression" name="cronExpression" value="${timeTaskPage.cronExpression}" datatype="*" style="width:50%"/>
+			<a href="http://cron.qqe2.com" target="_blank">
+				[生成Cron表达式]
+			</a>
 		<span class="Validform_checktip"></span>
+		
 	</div>
 	<div class="form">
 		<label class="Validform_label"><t:mutiLang langKey="common.task.className"/>:</label> 
-		<input class="inputxt" id="className" name="className" value="${timeTaskPage.className}" datatype="*" style="width:50%"/> 
+		<input class="inputxt" id="className" name="className" value="${timeTaskPage.className}" datatype="*" style="width:50%" /> 
 		<span class="Validform_checktip"></span>
 	</div>
-	<!-- update-begin--Author:xuelin  Date:20170822 for：TASK #1742 【新功能】定时任务配置    增加“本地”默认值设定------------------- -->
 	<div class="form">
 		<label class="Validform_label"><t:mutiLang langKey="common.task.runServerIp"/>:</label> 
 		<input class="inputxt" id="runServerIp" name="runServerIp" value="${empty timeTaskPage.runServerIp ? '本地' : timeTaskPage.runServerIp}" datatype="*" style="width:50%"/> 
@@ -44,8 +46,6 @@
 		<input class="inputxt" id="runServer" name="runServer" value="${empty timeTaskPage.runServer ? '本地' : timeTaskPage.runServer}" datatype="*" style="width:50%"/> 
 		<span class="Validform_checktip"></span>
 	</div>
-	<!-- update-end--Author:xuelin  Date:20170822 for：TASK #1742 【新功能】定时任务配置    增加“本地”默认值设定------------------- -->
 	</fieldset>
 </t:formvalid>
-<!-- update-end-Author:xuelin  Date:20170820 for：TASK #1742 【新功能】定时任务配置  -->
 </body>

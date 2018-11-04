@@ -20,7 +20,14 @@
 								<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 							   <#if subTableField.operationCodesReadOnly?exists> readonly = "readonly"</#if>
 				               <#if subTableField.field_valid_type?if_exists?html != ''>
-				               datatype="${subTableField.field_valid_type?if_exists?html}"
+				               		<#-- update--begin--author:Yandong Date:20180327 for:TASK #2547 【校验提示问题】校验提示问题 -->
+				               		<#if subTableField.field_valid_type=='only'>
+						       		   		validType="${sub},${subTableField.field_name},${sub}[#index#].id"
+						       		   		datatype="*"
+						       		<#else>
+					                   		datatype="${subTableField.field_valid_type?if_exists?html}"
+					               	</#if>
+					               	<#-- update--end--author:Yandong Date:20180327 for:TASK #2547 【校验提示问题】校验提示问题 -->
 				               <#else>
 				               <#if subTableField.type == 'int'>
 				               datatype="n" 
@@ -143,7 +150,7 @@
 								<#-- update--end--author:zhangjiaqiang Date:20170417 for:增加校验必填项 -->
 							   <#if subTableField.operationCodesReadOnly?if_exists> readonly = "readonly"
 							   <#else>
-						       onClick="inputClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
+						       onClick="popupClick(this,'${subTableField.dict_text?if_exists?html}','${subTableField.dict_field?if_exists?html}','${subTableField.dict_table?if_exists?html}');" 
 							   </#if>
 				               <#if subTableField.field_valid_type?if_exists?html != ''>
 				               datatype="${subTableField.field_valid_type?if_exists?html}"
@@ -162,10 +169,9 @@
 				               <#else>
 				               <#if subTableField.is_null != 'Y'>datatype="*"</#if>
 				               </#if>>
-				               <a  target="_blank" id="${sub}[#index#].${subTableField.field_name}_href">未上传</a>
-											  <br>
-										<input class="form-control" type="button" value="上传附件"
+										<input class="ui-button" type="button" value="上传附件"
 															onclick="commonUpload(commonUploadDefaultCallBack,'${sub}[#index#].${subTableField.field_name}')"/> 
+				               <a  target="_blank" id="${sub}[#index#].${subTableField.field_name}_href"></a>
 						<#-- update--end--author:zhangjiaqiang date:20170608 for:增加对于图片文件的支持 -->
 					<#else>
 						<input id="${sub}[#index#].${subTableField.field_name}" ${subTableField.extend_json?if_exists} name="${sub}[#index#].${subTableField.field_name}" type="text"

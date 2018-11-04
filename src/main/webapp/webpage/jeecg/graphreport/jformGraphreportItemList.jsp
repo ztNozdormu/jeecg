@@ -33,12 +33,12 @@
     });
 </script>
 <div style="padding: 3px; height: 25px;width:auto;" class="datagrid-toolbar">
-	<a id="addJformGraphreportItemBtn" href="#">添加</a> <a id="delJformGraphreportItemBtn" href="#">删除</a>
+	<a id="addJformGraphreportItemBtn" href="javascript:void(0);">添加</a> <a id="delJformGraphreportItemBtn" href="javascript:void(0);">删除</a>
 </div>
+
+<div style="width: auto; height: 300px; overflow-y: auto; overflow-x: scroll;">
 <table border="0" cellpadding="2" cellspacing="0" id="jformGraphreportItem_table">
 	<tr bgcolor="#E6E6E6">
-<!-- update-begin--Author:yugwu  Date:20170801 for：TASK #2236 【online 】文字样式调整-------------------- -->
-		<td align="center" bgcolor="#EEEEEE"><label class="Validform_label">序号</label></td>
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">操作</label></td>
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">字段名</label></td>
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">字段文本</label></td>
@@ -52,7 +52,6 @@
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">图表类型</label></td>
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">图表名称</label></td>
 		<td align="left" bgcolor="#EEEEEE"><label class="Validform_label">标签名称</label></td>
-<!-- update-end--Author:yugwu  Date:20170801 for：TASK #2236 【online 】文字样式调整-------------------- -->
 	</tr>
 	<tbody id="add_jformGraphreportItem_table">
 	<c:if test="${fn:length(jformGraphreportItemList)  <= 0 }">
@@ -207,3 +206,4 @@
 	</c:if>	
 	</tbody>
 </table>
+</div>

@@ -18,7 +18,9 @@
 	 	 return false;
     });  
 	$('#del${entityName}Btn').bind('click', function(){   
-      	$("#add_${entityName?uncap_first}_table").find("input:checked").parent().parent().remove();   
+		<#-- update--begin--author:jiaqiankun date:20180710 for：TASK #2933 【严重bug 代码生成器】一对多table风格，默认编辑数据，点击任意一条明细数据，删除，会把所有的明细删掉 -->
+		$("#add_${entityName?uncap_first}_table").find("input[name$='ck']:checked").parent().parent().remove();  
+      	<#-- update--end--author:jiaqiankun date:20180710 for：TASK #2933 【严重bug 代码生成器】一对多table风格，默认编辑数据，点击任意一条明细数据，删除，会把所有的明细删掉 --> 
         resetTrNum('add_${entityName?uncap_first}_table'); 
         return false;
     }); 
@@ -45,7 +47,10 @@
 	<tr bgcolor="#E6E6E6">
 		<td align="center" bgcolor="#EEEEEE" style="width: 25px;">序号</td>
 		<td align="center" bgcolor="#EEEEEE" style="width: 25px;">操作</td>
-		 <#list pageColumns as po>
+		 <#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+		 <#list columns as po>
+			<#if po.isShow=="Y">
+		<#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
 				 <#assign check = 0 >
 				  <#list foreignKeys as key>
 				  <#if fieldMeta[po.fieldName]==key?uncap_first>
@@ -58,6 +63,9 @@
 						${po.content}
 				  </td>
 				  </#if>
+		<#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+			</#if>
+		<#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
 	      </#list>
 	</tr>
 	<tbody id="add_${entityName?uncap_first}_table">
@@ -71,7 +79,10 @@
 					<input name="${entityName?uncap_first}List[0].${po.fieldName}" type="hidden"/>
 				</#if>
 				</#list>
-				<#list pageColumns as po>
+				<#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+				<#list columns as po>
+				<#if po.isShow=="Y">
+				<#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
 				  <#assign check = 0 >
 				  <#list foreignKeys as key>
 				  <#if fieldMeta[po.fieldName]==key?uncap_first>
@@ -82,26 +93,40 @@
 				  <#if check==0>
 				  <td align="left">
 					<#if po.showType == "text">
-					  	<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" />>
+					  	<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}"  tableName="${po.table.tableName}" fieldName="${po.oldFieldName}" idFieldName="${entityName?uncap_first}List[0].id" />>
 						<#elseif po.showType=='password'>
 							<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}"  type="password" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" />>
 						<#elseif po.showType=='radio' || po.showType=='select' || po.showType=='checkbox' || po.showType=='list'>
 							<t:dictSelect field="${entityName?uncap_first}List[0].${po.fieldName}" type="${po.showType?if_exists?html}" <@datatype inputCheck="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> <@dictInfo dictTable="${po.dictTable}" dictField="${po.dictField}" dictText="${po.dictText}" /> defaultVal="${'$'}{${entityName?uncap_first}Page.${po.fieldName}}" hasLabel="false"  title="${po.content}"></t:dictSelect>     
 						<#elseif po.showType=='date'>
-							<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}"  type="text" class="Wdate" onClick="WdatePicker()"  style="width:120px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/>>
+							<#-- update--begin--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
+							<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}"  type="text" class="Wdate" onClick="WdatePicker()"  style="width:150px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/>>
+					      	<#-- update--end--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
 					      <#elseif po.showType=='datetime'>
-					      	<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}" type="text"  class="Wdate" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"  style="width:120px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/>>
+					      	<#-- update--begin--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
+					      	<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}" type="text"  class="Wdate" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"  style="width:150px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/>>
+					      	<#-- update--end--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
 					       <#elseif po.showType=='file' || po.showType == 'image'>
 							<input type="hidden" id="${entityName?uncap_first}List[0].${po.fieldName}" name="${entityName?uncap_first}List[0].${po.fieldName}" />
+									  <#-- update--begin--author:zhangjiaqiang date:20171120 for:TASK #2419 【代码生成器模板】一对多情况下，附件样式改造 -->
+									  	<#-- update--begin--author:jiaqiankun date:20180710 for：TASK #2934 【bug - 少谦】老版代码生成器都存在的问题，明细页面上传附件的问题 -->
+									    <input class="ui-button" type="button" value="上传附件"  name="${entityName?uncap_first}List[0].imgBtn" onclick="commonUpload(commonUploadDefaultCallBack,'${entityName?uncap_first}List\\[0\\]\\.${po.fieldName}')"/> 
+										<#-- update--end--author:jiaqiankun date:20180710 for：TASK #2934 【bug - 少谦】老版代码生成器都存在的问题，明细页面上传附件的问题 -->
 										<a  target="_blank" id="${entityName?uncap_first}List[0].${po.fieldName}_href">未上传</a>
-										<br>
-									   <input class="ui-button" type="button" value="上传附件" onclick="commonUpload(commonUploadDefaultCallBack,'${entityName?uncap_first}List\\[0\\]\\.${po.fieldName}')"/> 
-					       <#else>
+										<#-- update--end--author:zhangjiaqiang date:20171120 for:TASK #2419 【代码生成器模板】一对多情况下，附件样式改造 -->
+						   <#elseif po.showType=='popup'>
+						   	 <#-- update--begin--author:baiyu Date:20171031 for:popup方法支持返回多个字段-->
+							 <input  id="${entityName?uncap_first}List[0].${po.fieldName}" name="${entityName?uncap_first}List[0].${po.fieldName}" type="text" style="width: 150px" class="searchbox-inputtext"  value="${'$'}{poVal.${po.fieldName} }"  <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" /><#if po.dictTable?if_exists?html!="">  onclick="popupClick(this,'${po.dictText}','${po.dictField}','${po.dictTable}')"</#if>/> 			 
+							 <#-- update--end--author:baiyu Date:20171031 for:popup方法支持返回多个字段-->
+							 <#else>
 					       	<input name="${entityName?uncap_first}List[0].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> >
 					  </#if>
 					  <label class="Validform_label" style="display: none;">${po.content?if_exists?html}</label>
 					</td>
 				  </#if>
+				  <#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+				  </#if>
+				  <#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
 	            </#list>
    			</tr>
 	</c:if>
@@ -116,7 +141,10 @@
 						<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" type="hidden" value="${'$'}{poVal.${po.fieldName} }"/>
 					</#if>
 				</#list>
-				<#list pageColumns as po>
+				<#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+				<#list columns as po>
+				<#if po.isShow=="Y">
+				<#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
 				  <#assign check = 0 >
 				  <#list foreignKeys as key>
 				  <#if fieldMeta[po.fieldName]==key?uncap_first>
@@ -128,7 +156,7 @@
 				   <td align="left">
 				   <#if po.showType == "text">
 				   <#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
-					  	<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" /> value="${'$'}{poVal.${po.fieldName} }"/>
+					  	<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}"  tableName="${po.table.tableName}" fieldName="${po.oldFieldName}" idFieldName="${entityName?uncap_first}List[${'$'}{stuts.index }].id" /> value="${'$'}{poVal.${po.fieldName} }"/>
 						<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
 						<#elseif po.showType=='password'>
 							<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
@@ -140,25 +168,36 @@
 							<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
 						<#elseif po.showType=='date'>
 							<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
-							<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text" class="Wdate" onClick="WdatePicker()"  style="width:120px;"  <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> value="<fmt:formatDate value='${'$'}{poVal.${po.fieldName}}' type="date" pattern="yyyy-MM-dd"/>"/>
+							<#-- update--begin--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
+							<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text" class="Wdate" onClick="WdatePicker()"  style="width:150px;"  <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> value="<fmt:formatDate value='${'$'}{poVal.${po.fieldName}}' type="date" pattern="yyyy-MM-dd"/>"/>
+					     	<#-- update--end--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
 					     	<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
 					     <#elseif po.showType=='datetime'>
 					      	<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
-					      	<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text"  class="Wdate" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"  style="width:120px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> value="<fmt:formatDate value='${'$'}{poVal.${po.fieldName}}' type="date" pattern="yyyy-MM-dd hh:mm:ss"/>"/>
+					      	<#-- update--begin--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
+					      	<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text"  class="Wdate" onClick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss'})"  style="width:150px;" <@datatype showType="2" validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> value="<fmt:formatDate value='${'$'}{poVal.${po.fieldName}}' type="date" pattern="yyyy-MM-dd hh:mm:ss"/>"/>
+					     	<#-- update--end--author:gj_shaojc Date:20180409 for:TASK #2622 【代码生成体验问题】代码生成 [多tab风格]、[table风格] 列表时间控件长度短了 -->
 					     	<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
 					     	<#-- update--begin--author:zhangjiaqiang date:20170531 for:增加图片和文件的支持 -->
 					     <#elseif po.showType=='file' || po.showType == 'image'>
 					     <#-- update--end--author:zhangjiaqiang date:20170531 for:增加图片和文件的支持 -->
 					        <input type="hidden" id="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}"  value="${'$'}{poVal.${po.fieldName} }"/>
-										<c:if test="${'$'}{empty poVal.${po.fieldName}}">
-											<a  target="_blank" id="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}_href">未上传</a>
+										 <#-- update--begin--author:zhangjiaqiang date:20171120 for:TASK #2419 【代码生成器模板】一对多情况下，附件样式改造 -->
+									   <#-- update--begin--author:jiaqiankun date:20180710 for：TASK #2934 【bug - 少谦】老版代码生成器都存在的问题，明细页面上传附件的问题 -->
+									   <input class="ui-button" type="button" value="上传附件" name="${entityName?uncap_first}List[${'$'}{stuts.index }].imgBtn"
+													onclick="commonUpload(commonUploadDefaultCallBack,'${entityName?uncap_first}List\\[${'$'}{stuts.index }\\]\\.${po.fieldName}')"/>
+										<#-- update--end--author:jiaqiankun date:20180710 for：TASK #2934 【bug - 少谦】老版代码生成器都存在的问题，明细页面上传附件的问题 --> 
+					  	 		<c:if test="${'$'}{empty poVal.${po.fieldName}}">
+											<a  target="_blank" id="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}_href"></a>
 										</c:if>
 										<c:if test="${'$'}{!empty poVal.${po.fieldName}}">
 											<a  href="${'$'}{poVal.${po.fieldName}}"  target="_blank" id="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}_href">下载</a>
 										</c:if>
-										<br>
-									   <input class="ui-button" type="button" value="上传附件"
-													onclick="commonUpload(commonUploadDefaultCallBack,'${entityName?uncap_first}List\\[${'$'}{stuts.index }\\]\\.${po.fieldName}')"/> 
+										 <#-- update--end--author:zhangjiaqiang date:20171120 for:TASK #2419 【代码生成器模板】一对多情况下，附件样式改造 -->
+					  	 	<#elseif po.showType=='popup'>
+					  	 	<#-- update--begin--author:baiyu Date:20171031 for:popup方法支持返回多个字段-->
+							 <input  id="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}"  type="text" style="width: 150px" class="searchbox-inputtext"  <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" /><#if po.dictTable?if_exists?html!=""> onclick="popupClick(this,'${po.dictText}','${po.dictField}','${po.dictTable}')"</#if>    value="${'$'}{poVal.${po.fieldName} }" /> 			 
+							 <#-- update--end--author:baiyu Date:20171031 for:popup方法支持返回多个字段-->
 					       <#else>
 					       	<#-- update--begin--author:zhangjiaqiang Date:20170509 for:修订生成页面乱 -->
 					       	<input name="${entityName?uncap_first}List[${'$'}{stuts.index }].${po.fieldName}" maxlength="${po.length?c}" type="text" class="inputxt"  style="width:120px;" <@datatype validType="${po.fieldValidType!''}" isNull="${po.isNull}" type="${po.type}" mustInput="${po.fieldMustInput!''}" isNull="${po.isNull}"/> value="${'$'}{poVal.${po.fieldName} }"/>
@@ -167,6 +206,9 @@
 					  <label class="Validform_label" style="display: none;">${po.content?if_exists?html}</label>
 				   </td>
 				  </#if>
+				  <#-- update--begin--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
+				  </#if>
+				  <#-- update--end--author:zhoujf Date:20180404 for:TASK #2600 【代码生成器一对多问题】一对多 子表 多行文本 和 UE编辑器控件字段 没有生成 -->
    			 	</#list>
    			</tr>
 		</c:forEach>

@@ -11,27 +11,24 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * @ClassName:SmsSendTask 所有信息的发送定时任务类
- * @Description: TODO
- * @author Comsys-skyCc cmzcheng@gmail.com
+ * @ClassName:SmsSendTask 
+ * @Description: 消息推送定时任务
  * @date 2014-11-13 下午5:06:34
  * 
  */
-
 @Service("smsSendTask")
 public class SmsSendTask implements Job{
 	
 	@Autowired
 	private TSSmsServiceI tSSmsService; 
 	
-	/*@Scheduled(cron="0 0/1 * * * ?")*/
 	public void run() {
 		long start = System.currentTimeMillis();
 		org.jeecgframework.core.util.LogUtil.info("===================推送消息定时任务开始===================");
-		try {
+		try {			
 			tSSmsService.send();
 		} catch (Exception e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 		org.jeecgframework.core.util.LogUtil.info("===================推送消息定时任务结束===================");
 		long end = System.currentTimeMillis();

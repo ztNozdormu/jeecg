@@ -3,18 +3,21 @@ package org.jeecgframework.web.cgform.controller.build;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.jeecgframework.core.common.controller.BaseController;
 import org.jeecgframework.core.common.model.json.AjaxJson;
 import org.jeecgframework.core.enums.SysThemesEnum;
@@ -30,14 +33,18 @@ import org.jeecgframework.web.cgform.common.CgAutoListConstant;
 import org.jeecgframework.web.cgform.common.CommUtils;
 import org.jeecgframework.web.cgform.engine.TempletContext;
 import org.jeecgframework.web.cgform.entity.config.CgFormHeadEntity;
+import org.jeecgframework.web.cgform.entity.config.CgSubTableVO;
 import org.jeecgframework.web.cgform.entity.template.CgformTemplateEntity;
 import org.jeecgframework.web.cgform.entity.upload.CgUploadEntity;
 import org.jeecgframework.web.cgform.exception.BusinessException;
 import org.jeecgframework.web.cgform.service.build.DataBaseService;
 import org.jeecgframework.web.cgform.service.config.CgFormFieldServiceI;
 import org.jeecgframework.web.cgform.service.template.CgformTemplateServiceI;
+import org.jeecgframework.web.cgform.util.FillRuleUtil;
 import org.jeecgframework.web.cgform.util.PublicUtil;
 import org.jeecgframework.web.cgform.util.TemplateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,7 +63,8 @@ import freemarker.template.TemplateException;
 @Controller
 @RequestMapping("/cgFormBuildController")
 public class CgFormBuildController extends BaseController {
-	private static final Logger logger = Logger.getLogger(CgFormBuildController.class);
+	private static final Logger logger = LoggerFactory.getLogger(CgFormBuildController.class);
+	
 	@Autowired
 	private TempletContext templetContext;
 	@Autowired
@@ -93,8 +101,8 @@ public class CgFormBuildController extends BaseController {
 	@RequestMapping(params = "mobileForm")
 	public void mobileForm(HttpServletRequest request,HttpServletResponse response) {
 		String tableName =request.getParameter("tableName");
-		String sql = "select form_template_mobile from cgform_head where table_name = '"+tableName+"'";
-		Map<String, Object> mp = cgFormFieldService.findOneForJdbc(sql);
+		String sql = "select form_template_mobile from cgform_head where table_name = ?";
+		Map<String, Object> mp = cgFormFieldService.findOneForJdbc(sql,tableName);
 		if(mp.containsKey("form_template_mobile") && oConvertUtils.isNotEmpty(mp.get("form_template_mobile"))){
 			String urlTemplateName=request.getParameter("olstylecode");
 			if(oConvertUtils.isEmpty(urlTemplateName)){
@@ -105,6 +113,61 @@ public class CgFormBuildController extends BaseController {
 		
 	}
 
+	private void putFormData(List<Map<String,Object>> list,Map<String,Object> dataForm){
+		if(list!=null && !list.isEmpty()){
+			for (Map<String, Object> column : list) {
+				Object value=column.get("fill_rule_code");
+				if(value!=null && !value.equals("")){
+					dataForm.put(column.get("field_name").toString(), FillRuleUtil.executeRule(value.toString()));
+				}
+			}
+		}
+	}
+
+	/**
+	 * 过滤online扩展参数中value属性
+	 * @param list 表单列集合
+	 */
+	private void replaceExtendJson(List<Map<String,Object>> list){
+		if(list!=null && !list.isEmpty()){
+			for (Map<String, Object> column : list) {
+				Object extendJson=column.get("extend_json");
+				if(extendJson!=null && !extendJson.equals("")){
+					String reg="value=\"[\\S]*\" ";
+					column.put("extend_json", extendJson.toString().replaceAll(reg,""));
+				}
+			}
+		}
+	}
+
+	/**
+	 * 设置页面字典类型的默认值
+	 * 类型： select、checkbox、radio
+	 * @param list
+	 * @param dataForm
+	 */
+	private void initAddDictTagDefaultVal(List<Map<String,Object>> list,Map<String, Object> dataForm){
+		if(list!=null && !list.isEmpty()){
+			for (Map<String, Object> column : list) {
+				Object extendJson = column.get("extend_json");
+				Object show_type = column.get("show_type");
+				if(oConvertUtils.isNotEmpty(extendJson) && oConvertUtils.isNotEmpty(show_type) && "radio|checkbox|list".contains(show_type.toString())){
+					 Pattern p = Pattern.compile("value=\"[\\S]*\" ");
+				     Matcher m = p.matcher(extendJson.toString());
+				     String dfVal = "";
+				     while(m.find()) {
+				    	 dfVal = m.group();
+				     }
+				     dfVal = dfVal.replace("value=","").replace("\"","").trim();
+					 dataForm.put(column.get("field_name").toString(),dfVal);
+					 logger.debug("--------------online添加页面字典类型默认值初始化----------field_name:{} ,dfVal:{} ,show_type :{}",
+							 					new Object[] { column.get("field_name").toString(), dfVal, show_type.toString() });
+				}
+			}
+		}
+	}
+	
+	
 	/**
 	 * form表单页面跳转
 	 */
@@ -114,6 +177,12 @@ public class CgFormBuildController extends BaseController {
 		try {
 			long start = System.currentTimeMillis();
 //			String tableName =request.getParameter("tableName");
+
+			String lang = (String)request.getSession().getAttribute("lang");
+			if(oConvertUtils.isEmpty(lang)){
+				lang = "zh-cn";
+			}
+
 	        Map<String, Object> data = new HashMap<String, Object>();
 	        String id = request.getParameter("id");
 
@@ -123,25 +192,26 @@ public class CgFormBuildController extends BaseController {
 			String templateName=tablename+"_";
 			//String templateName=tableName+"_";
 
-			Map<String, Object> dataForm = new HashMap<String, Object>();
-	        if(StringUtils.isNotEmpty(id)){
+//			Map<String, Object> dataForm = new HashMap<String, Object>();
+//	        if(StringUtils.isNotEmpty(id)){
 
-	        	dataForm = dataBaseService.findOneForJdbc(tablename, id);
-	        	//dataForm = dataBaseService.findOneForJdbc(tableName, id);
+//	        	dataForm = dataBaseService.findOneForJdbc(tablename, id);
+//	        	//dataForm = dataBaseService.findOneForJdbc(tableName, id);
 
-		        if(dataForm!=null){
-		        	Iterator it=dataForm.entrySet().iterator();
-				    while(it.hasNext()){
-				    	Map.Entry entry=(Map.Entry)it.next();
-				        String ok=(String)entry.getKey();
-				        Object ov=entry.getValue();
-				        data.put(ok, ov);
-				    }
-		        }else{
-		        	id = null;
-		        	dataForm = new HashMap<String, Object>();
-		        }
-	        }
+//		        if(dataForm!=null){
+//		        	Iterator it=dataForm.entrySet().iterator();
+//				    while(it.hasNext()){
+//				    	Map.Entry entry=(Map.Entry)it.next();
+//				        String ok=(String)entry.getKey();
+//				        Object ov=entry.getValue();
+//				        data.put(ok, ov);
+//				    }
+//		        }else{
+//		        	logger.info("online表单【"+tablename+"】【"+id+"】不存在");
+//		        	id = null;
+//		        	dataForm = new HashMap<String, Object>();
+//		        }
+//	        }
 
 			TemplateUtil.TemplateType templateType=TemplateUtil.TemplateType.LIST;
 			if(StringUtils.isBlank(id)){
@@ -159,29 +229,102 @@ public class CgFormBuildController extends BaseController {
 	        //装载表单配置
 	    	Map configData = cgFormFieldService.getFtlFormConfig(tableName,version);
 	    	data = new HashMap(configData);
+
+	    	Map<String, Object> dataForm = new HashMap<String, Object>();
+	    	if(StringUtils.isNotEmpty(id)){
+	        	dataForm = dataBaseService.findOneForJdbc(tablename, id);
+		        if(dataForm!=null){
+		        	Iterator it=dataForm.entrySet().iterator();
+				    while(it.hasNext()){
+				    	Map.Entry entry=(Map.Entry)it.next();
+				        String ok=(String)entry.getKey();
+				        Object ov=entry.getValue();
+
+				        if(ov instanceof byte[]) {
+				        	ov=new String((byte[])ov,"utf-8");
+				        	entry.setValue(ov);
+				        }
+
+						data.put(ok, ov);
+				    }
+		        }else{
+		        	logger.info("online表单【"+tablename+"】【"+id+"】不存在");
+		        	id = null;
+		        	dataForm = new HashMap<String, Object>();
+		        }
+		    }
+
 	    	//如果该表是主表查出关联的附表
 	    	CgFormHeadEntity head = (CgFormHeadEntity)data.get("head");
 	      
 	        Map<String, Object> tableData  = new HashMap<String, Object>();
 	        //获取主表或单表表单数据
 
+			if(StringUtils.isBlank(id)){
+				//Online添加页面，select\radio\checkbox 支持默认值设置
+				initAddDictTagDefaultVal((List<Map<String,Object>>)data.get("columns"),dataForm);
+				
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				logger.info("============================填值规则开始时间:"+sdf.format(new Date())+"==============================");
+				long startTime = System.currentTimeMillis();
+				//给主表字段加默认值
+				putFormData((List<Map<String,Object>>) data.get("columns"),dataForm);
+				putFormData((List<Map<String,Object>>) data.get("columnhidden"),dataForm);
+				//子表加默认值
+				String subTableStr = head.getSubTableStr();
+				if(StringUtils.isNotEmpty(subTableStr)){
+					String [] subTables = subTableStr.split(",");
+					Map<String,Object> subDataForm=null;
+					List<Map<String,Object>> subTableData =null;
+					Map<String, Object> field = (Map<String, Object>) data.get("field");
+					for(String subTable:subTables){
+						CgSubTableVO subTableVO=(CgSubTableVO) field.get(subTable);
+						subTableData=new ArrayList<Map<String,Object>>();
+						subDataForm=new HashMap<String, Object>();
+						//Online添加页面，select\radio\checkbox控件， 支持默认值设置
+						initAddDictTagDefaultVal((List<Map<String,Object>>)subTableVO.getFieldList(),subDataForm);
+						putFormData(subTableVO.getFieldList(),subDataForm);
+						putFormData(subTableVO.getHiddenFieldList(),subDataForm);
+						subTableData.add(subDataForm);
+						tableData.put(subTable,subTableData);
+					}
+				}
+				long endTime = System.currentTimeMillis();
+				logger.info("================================填值规则结束时间:"+sdf.format(new Date())+"==============================");
+				logger.info("================================填值规则耗时:"+(endTime-startTime)+"ms==============================");
+			}
+
+
+	        
 	        tableData.put(tablename, dataForm);
 	        //tableData.put(tableName, dataForm);
 
 	        //获取附表表表单数据
 	    	if(StringUtils.isNotEmpty(id)){
+
+	    		//过滤扩展参数value属性
+	    		replaceExtendJson((List<Map<String,Object>>) data.get("columns"));
+	    		replaceExtendJson((List<Map<String,Object>>) data.get("columnhidden"));
+
 		    	if(head.getJformType()==CgAutoListConstant.JFORM_TYPE_MAIN_TALBE){
 			    	String subTableStr = head.getSubTableStr();
 			    	if(StringUtils.isNotEmpty(subTableStr)){
 			    		 String [] subTables = subTableStr.split(",");
 			    		 List<Map<String,Object>> subTableData = new ArrayList<Map<String,Object>>();
+			    		 Map<String, Object> field = (Map<String, Object>) data.get("field");
 			    		 for(String subTable:subTables){
-				    			subTableData = cgFormFieldService.getSubTableData(tableName,subTable,id);
-				    			tableData.put(subTable, subTableData);
+			    			subTableData = cgFormFieldService.getSubTableData(tableName,subTable,id);
+			    			tableData.put(subTable, subTableData);
+			    			CgSubTableVO subTableVO=(CgSubTableVO) field.get(subTable);
+
+			    			replaceExtendJson(subTableVO.getFieldList());
+			    			replaceExtendJson(subTableVO.getHiddenFieldList());
+
 			    		 }
 			    	}
 		    	}
 	    	}
+	    	data.put("lang", lang);//国际化
 	    	//装载单表/(主表和附表)表单数据
 	    	data.put("data", tableData);
 	    	data.put("id", id);
@@ -194,8 +337,7 @@ public class CgFormBuildController extends BaseController {
 	    	pushImages(data, id);
 	    	
 	    	//增加basePath
-	    	//String basePath = request.getContextPath();
-	    	String basePath = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+	    	String basePath = request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
 	    	data.put(CgAutoListConstant.BASEPATH, basePath);
 
 	    	data.put("brower_type", ContextHolderUtils.getSession().getAttribute("brower_type"));
@@ -248,9 +390,7 @@ public class CgFormBuildController extends BaseController {
 		CgformTemplateEntity entity=cgformTemplateService.findByCode(templateName);
 		if(entity!=null){
 			FreemarkerHelper viewEngine = new FreemarkerHelper();
-
 			dataMap.put("DictData", ApplicationContextUtil.getContext().getBean("dictDataTag"));
-
 			content = viewEngine.parseTemplate(TemplateUtil.getTempletPath(entity,0, templateType), dataMap);
 		}
 		return content;
@@ -266,11 +406,9 @@ public class CgFormBuildController extends BaseController {
 	private String getTableTemplate(String templateName,HttpServletRequest request,Map data){
 		StringWriter stringWriter = new StringWriter();
 		BufferedWriter writer = new BufferedWriter(stringWriter);
-
-		String ftlVersion =request.getParameter("ftlVersion");
-//		String ftlVersion = oConvertUtils.getString(data.get("version"));
-
-		Template template = templetContext.getTemplate(templateName, ftlVersion);
+		//如果URL请求有ftlVersion参数，表示用户指定word模板渲染表单
+		String wordFtlVersion =request.getParameter("ftlVersion");
+		Template template = templetContext.getTemplate(templateName, wordFtlVersion);
 		try {
 
 			template.setDateTimeFormat("yyyy-MM-dd HH:mm:ss");  
@@ -294,9 +432,9 @@ public class CgFormBuildController extends BaseController {
 		}
 		StringBuilder sb= new StringBuilder("");
 		SysThemesEnum sysThemesEnum = SysThemesUtil.getSysTheme(request);
-		//String basePath = request.getContextPath();
-		String basePath = "http://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+		String basePath = request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/jquery/jquery-1.8.3.js\"></script>");
+		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/jquery-plugs/i18n/jquery.i18n.properties.js\"></script>");
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/tools/dataformat.js\"></script>");
 		sb.append("<link rel=\"stylesheet\" type=\"text/css\" href=\""+basePath+"/plug-in/accordion/css/accordion.css\">");
 		sb.append(SysThemesUtil.getEasyUiTheme(sysThemesEnum,basePath));
@@ -316,11 +454,14 @@ public class CgFormBuildController extends BaseController {
 
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/layer/layer.js\"></script>");
 
-		sb.append(StringUtil.replace("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/tools/curdtools_{0}.js\"></script>", "{0}", lang));
+		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/tools/curdtools.js\"></script>");
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/tools/easyuiextend.js\"></script>");
 		sb.append(SysThemesUtil.getEasyUiMainTheme(sysThemesEnum,basePath));
 		sb.append("<link rel=\"stylesheet\" href=\""+basePath+"/plug-in/uploadify/css/uploadify.css\" type=\"text/css\"></link>");
-		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/uploadify/jquery.uploadify-3.1.js\"></script>");
+
+		//sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/uploadify/jquery.uploadify-3.1.js\"></script>");
+		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/plupload/plupload.full.min.js\"></script>");
+
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/tools/Map.js\"></script>");
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/Validform/js/Validform_v5.3.1_min_zh-cn.js\"></script>");
 		sb.append("<script type=\"text/javascript\" src=\""+basePath+"/plug-in/Validform/js/Validform_Datatype_zh-cn.js\"></script>");
@@ -554,9 +695,12 @@ public class CgFormBuildController extends BaseController {
 			        logger.debug("name:"+ok.toString()+";value:"+ov.toString());
 			    }
 				data = CommUtils.mapConvert(data);
+
+				dataBaseService.executeJavaExtend(formId, buttonCode, data, "start");
+
 				dataBaseService.executeSqlExtend(formId, buttonCode, data);
 
-				dataBaseService.executeJavaExtend(formId, buttonCode, data);
+				dataBaseService.executeJavaExtend(formId, buttonCode, data, "end");
 
 			}
 			j.setSuccess(true);

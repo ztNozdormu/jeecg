@@ -77,7 +77,9 @@
 			<td class="value" colspan="5"><textarea rows="5" cols="150" id="cgrSql" name="cgrSql" datatype="*">${cgreportConfigHeadPage.cgrSql}</textarea> <span class="Validform_checktip"></span>
 						 <p>&nbsp;&nbsp;&nbsp;&nbsp;您可以键入“${abc}”作为一个参数，这里abc是参数的名称。例如：<br/>
 							&nbsp;&nbsp;&nbsp;&nbsp;select * from table where id = <%="${abc}"%>。<br/>
-							&nbsp;&nbsp;&nbsp;&nbsp;select * from table where id = <%="'${abc}'"%>（如果id字段为字符串类型）<br/>
+							&nbsp;&nbsp;&nbsp;&nbsp;select * from table where id like concat('%',<%="${abc}"%>,'%')。(mysql模糊查询)<br/>
+							&nbsp;&nbsp;&nbsp;&nbsp;select * from table where id like '%'||<%="${abc}"%>||'%'。(oracle模糊查询)<br/>
+							&nbsp;&nbsp;&nbsp;&nbsp;select * from table where id like '%'+<%="${abc}"%>+'%'。(sqlserver模糊查询)<br/>
 							&nbsp;&nbsp;&nbsp;&nbsp;<font color="red">注：参数只支持动态报表，popup暂不支持</font><p/>
 			</td>
 		</tr>
@@ -87,7 +89,6 @@
 			<td class="value" colspan="5"><textarea rows="3" cols="150" id="content" name="content">${cgreportConfigHeadPage.content}</textarea> <span class="Validform_checktip"></span></td>
 
 		</tr>
-	<!-- 		update-begin--Author:huangzq  Date:20151129 for：[753]【在线报表】扩展增加俩字段，非必填-------------------- -->
 		<tr>
 			<td align="right"><label class="Validform_label"><t:mutiLang langKey="common.returnvalfield"/>:</label></td>
 			<td class="value"><input id="returnValField" name="returnValField" type="text" style="width: 150px" class="inputxt" value="${cgreportConfigHeadPage.returnValField}"> <span class="Validform_checktip"></span></td>
@@ -96,11 +97,8 @@
 			<td align="right"><label class="Validform_label"><t:mutiLang langKey="common.returntxttype"/>:</label></td>
 			<td class="value" colspan="3"> <t:dictSelect field="popRetype" typeGroupCode="pop_retype" hasLabel="false" defaultVal="${cgreportConfigHeadPage.popRetype}"/><span class="Validform_checktip"></span></td>
         </tr>
-     <!-- 		update-end--Author:huangzq  Date:20151129 for：[753]【在线报表】扩展增加俩字段，非必填-------------------- -->   
 	</table>
-	<!-- update-begin--Author:xuelin  Date:20170620 for：TASK #2132 【浏览器兼容问题】IE8(兼容模式)下自定义报表，列出不来---------------------- -->
 	<div style="width: auto; "><%-- 增加一个div，用于调节页面大小，否则默认太小 --%>
-	<!-- update-end--Author:xuelin  Date:20170620 for：TASK #2132 【浏览器兼容问题】IE8(兼容模式)下自定义报表，列出不来---------------------- -->
 		<div style="width: 800px; height: 1px;"></div>
 		<t:tabs id="ttp" iframe="false" tabPosition="top" fit="false"><t:tab href="cgreportConfigHeadController.do?cgreportConfigParamList&id=${cgreportConfigHeadPage.id}" icon="icon-search" title="报表参数" id="cgreportConfigParam"></t:tab></t:tabs>				
 		<t:tabs id="tt" iframe="false" tabPosition="top" fit="false"><t:tab href="cgreportConfigHeadController.do?cgreportConfigItemList&id=${cgreportConfigHeadPage.id}" icon="icon-search" title="dynamic.report.config.detail" id="cgreportConfigItem"></t:tab></t:tabs>
@@ -123,7 +121,7 @@
 			<td align="left"><t:dictSelect field="cgreportConfigItemList[#index#].SMode" type="list" extendJson="{style:'width:90px'}" typeGroupCode="searchmode" defaultVal="" hasLabel="false" title="common.query.module"></t:dictSelect></td>
 			<td align="left"><input name="cgreportConfigItemList[#index#].replaceVa" maxlength="36" type="text" class="inputxt" style="width: 120px;"></td>
 			<td align="left"><input name="cgreportConfigItemList[#index#].dictCode" maxlength="36" type="text" class="inputxt" style="width: 120px;"></td>
-			<td align="left"><t:dictSelect field="cgreportConfigItemList[#index#].SFlag" type="list" extendJson="{style:'width:60px'}" typeGroupCode="yesorno" defaultVal="" hasLabel="false" title="common.isquery"></t:dictSelect></td>
+			<td align="left"><t:dictSelect field="cgreportConfigItemList[#index#].SFlag" type="list" extendJson="{style:'width:90px'}" typeGroupCode="yesorno" defaultVal="" hasLabel="false" title="common.isquery"></t:dictSelect></td>
 		</tr>
 	</tbody>
 </table>

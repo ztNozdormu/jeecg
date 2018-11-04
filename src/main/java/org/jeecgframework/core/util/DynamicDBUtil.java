@@ -1,5 +1,6 @@
 package org.jeecgframework.core.util;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,13 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 public class DynamicDBUtil {
 	private static final Logger logger = Logger.getLogger(DynamicDBUtil.class);
 	
-	private static BasicDataSource getDataSource(final DynamicDataSourceEntity dynamicSourceEntity) {
+	/**
+	 * 获取数据源【最底层方法，不要随便调用】
+	 * @param dynamicSourceEntity
+	 * @return
+	 */
+	@Deprecated
+	private static BasicDataSource getJdbcDataSource(final DynamicDataSourceEntity dynamicSourceEntity) {
 		BasicDataSource dataSource = new BasicDataSource();
 		
 		String driverClassName = dynamicSourceEntity.getDriverClass();
@@ -41,23 +48,50 @@ public class DynamicDBUtil {
 		return dataSource;
 	}
 	
-	private static JdbcTemplate getJdbcTemplate(String dbKey) {
-		DynamicDataSourceEntity dynamicSourceEntity = ResourceUtil.dynamicDataSourceMap.get(dbKey);
-		
-		BasicDataSource dataSource = getDataSource(dynamicSourceEntity);
-		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource); 
-		return jdbcTemplate;
+	/**
+	 * 通过dbkey,获取数据源
+	 * @param dbKey
+	 * @return
+	 */
+	public static BasicDataSource getDbSourceBydbKey(final String dbKey) {
+		//获取多数据源配置
+		DynamicDataSourceEntity dynamicSourceEntity = ResourceUtil.getCacheDynamicDataSourceEntity(dbKey);
+		//先判断缓存中是否存在数据库链接
+		BasicDataSource cacheDbSource = ResourceUtil.getCacheBasicDataSource(dbKey);
+		if(cacheDbSource!=null && !cacheDbSource.isClosed()){
+			logger.debug("--------getDbSourceBydbKey------------------从缓存中获取DB连接-------------------");
+			return cacheDbSource;
+		}else{
+			BasicDataSource dataSource = getJdbcDataSource(dynamicSourceEntity);
+			ResourceUtil.putCacheBasicDataSource(dbKey, dataSource);
+			logger.info("--------getDbSourceBydbKey------------------创建DB数据库连接-------------------");
+			return dataSource;
+		}
 	}
 	
-    /**
-	 * 该方法只是方便用于main方法测试调用
-	 * @param dynamicSourceEntity
-	 * @return JdbcTemplate
+	/**
+	 * 关闭数据库连接池
+	 *  @param dbKey
+	 * @return 
+	 * @return
 	 */
-	@SuppressWarnings("unused")
-	private static JdbcTemplate getJdbcTemplate(DynamicDataSourceEntity dynamicSourceEntity) {
-		BasicDataSource dataSource = getDataSource(dynamicSourceEntity);
-		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource); 
+	public static void closeDBkey(final String dbKey){
+		BasicDataSource dataSource = getDbSourceBydbKey(dbKey);
+		try {
+			if(dataSource!=null && !dataSource.isClosed()){
+				dataSource.getConnection().commit();
+				dataSource.getConnection().close();
+				dataSource.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private static JdbcTemplate getJdbcTemplate(String dbKey) {
+		BasicDataSource dataSource = getDbSourceBydbKey(dbKey);
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 		return jdbcTemplate;
 	}
 	
@@ -77,7 +111,6 @@ public class DynamicDBUtil {
 		} else {
 			effectCount = jdbcTemplate.update(sql, param);
 		}
-		
 		return effectCount;
 	}
 
@@ -104,17 +137,18 @@ public class DynamicDBUtil {
 
 		list = findList(dbKey, sql, param);
 
-		
 		if(ListUtils.isNullOrEmpty(list))
 		{
 			logger.error("Except one, but not find actually");
+			return null;
 		}
 		
 		if(list.size() > 1)
 		{
 			logger.error("Except one, but more than one actually");
+			return null;
 		}
-		
+
 		return list.get(0);
 	}
 
@@ -128,12 +162,16 @@ public class DynamicDBUtil {
 	public static Object findOneByHash(final String dbKey, String sql, HashMap<String, Object> data){
 		List<Map<String, Object>> list;
 		list = findListByHash(dbKey, sql, data);
+
 		if(ListUtils.isNullOrEmpty(list)){
 			logger.error("Except one, but not find actually");
+			return null;
 		}
 		if(list.size() > 1){
 			logger.error("Except one, but more than one actually");
+			return null;
 		}
+
 		return list.get(0);
 	}
 
@@ -248,69 +286,4 @@ public class DynamicDBUtil {
 		return ReflectHelper.transList2Entrys(queryList, clazz);
 	}
 
-	
-	@SuppressWarnings("unchecked")
-	public static void main(String[] args) {
-		DynamicDataSourceEntity dynamicSourceEntity = new DynamicDataSourceEntity();
-		
-		String dbKey = "SAP_DB";
-		String driverClassName = "com.mysql.jdbc.Driver";
-		String url = "jdbc:mysql://localhost:3306/jeecg";
-		String dbUser = "root";
-		String dbPassword = "root";
-		
-		dynamicSourceEntity.setDbKey(dbKey);
-		dynamicSourceEntity.setDriverClass(driverClassName);
-		dynamicSourceEntity.setUrl(url);
-		dynamicSourceEntity.setDbUser(dbUser);
-		dynamicSourceEntity.setDbPassword(dbPassword);
-		
-		ResourceUtil.dynamicDataSourceMap.put(dbKey, dynamicSourceEntity);
-		
-		String sql = "<#if nlevel gt 2> insert into GWYUTEST003(id, sname, nlevel) values ((select maxid from (select ifnull(max(id)+1,1) maxid from GWYUTEST003) a),"
-				+ " :sname, :nlevel)</#if>";
-		HashMap<String, Object> data = new HashMap<String, Object>();
-		data.put("sname", "aaa");
-		data.put("nlevel", 3);
-		DynamicDBUtil.updateByHash(dbKey, sql, data);
-		
-		sql = "SELECT * FROM GWYUTEST003 WHERE id = :id";data = new HashMap<String, Object>();
-		data.put("id", 1);
-		Map<String, Object> aaa = (Map<String, Object>) DynamicDBUtil.findOneByHash(dbKey, sql, data);
-		System.out.println(aaa.get("sname"));
-		
-		sql = "SELECT * FROM GWYUTEST003 WHERE id >= '${id}'";data = new HashMap<String, Object>();
-		data.put("id", 2);
-		List<GwyuTest> bbb = DynamicDBUtil.findListEntrysByHash(dbKey, sql, GwyuTest.class, data);
-		System.out.println(bbb);
-		
-		//List<Map<String, Object>> list = DynamicDBUtil.getList(jdbcTemplate, sql);
-		//System.out.println(list.size());
-	}
-	public static class GwyuTest{
-		public GwyuTest(){}
-		private long id;
-		private String sname;
-		private long nlevel;
-		public long getId() {
-			return id;
-		}
-		public void setId(long id) {
-			this.id = id;
-		}
-		public String getSname() {
-			return sname;
-		}
-		public void setSname(String sname) {
-			this.sname = sname;
-		}
-		public long getNlevel() {
-			return nlevel;
-		}
-		public void setNlevel(long nlevel) {
-			this.nlevel = nlevel;
-		}
-		
-	}
-	
 }

@@ -44,7 +44,7 @@ public interface SystemService extends CommonService{
 	 * @param operatetype 类型
 	 * @param TUser 操作人
 	 */
-	public void addLog(String LogContent, Short loglevel,Short operatetype);
+	public void addLog(String LogContent,Short operatetype, Short loglevel);
 	/**
 	 * 根据类型编码和类型名称获取Type,如果为空则创建一个
 	 * @param typecode
@@ -59,25 +59,7 @@ public interface SystemService extends CommonService{
 	 * @return
 	 */
 	public TSTypegroup getTypeGroup(String typegroupcode,String typgroupename);
-	/**
-	 * 根据用户ID 和 菜单Id 获取 具有操作权限的按钮Codes
-	 * @param roleId
-	 * @param functionId
-	 * @return
-	 */
-	public  Set<String> getOperationCodesByUserIdAndFunctionId(String userId,String functionId);
-	/***
-	 * 根据用户ID 和 菜单Id 获取 具有操作权限的按钮
-	 */
-	public List<TSOperation> getOperationsByUserIdAndFunctionId(String userId,String functionId);
 	
-	/**
-	 * 根据角色ID 和 菜单Id 获取 具有操作权限的按钮Codes
-	 * @param roleId
-	 * @param functionId
-	 * @return
-	 */
-	public  Set<String> getOperationCodesByRoleIdAndFunctionId(String roleId,String functionId);
 	/**
 	 * 获取页面控件权限控制的
 	 * JS片段
@@ -106,6 +88,13 @@ public interface SystemService extends CommonService{
 	 * 刷新字典分组缓存
 	 */
 	public void refleshTypeGroupCach();
+
+	/**
+	 * 刷新字典分组缓存&字典缓存
+	 */
+	public void refreshTypeGroupAndTypes();
+
+	
 	/**
 	 * 刷新菜单
 	 *
@@ -122,11 +111,7 @@ public interface SystemService extends CommonService{
 	String generateOrgCode(String id, String pid);
 
 	/**
-	 *
-	  * getOperationCodesByRoleIdAndruleDataId
 	  * 根据角色id 和 菜单Id 获取 具有操作权限的数据规则
-	  *
-	  * @Title: getOperationCodesByRoleIdAndruleDataId
 	  * @Description: TODO
 	  * @param @param roleId
 	  * @param @param functionId
@@ -135,10 +120,17 @@ public interface SystemService extends CommonService{
 	  * @throws
 	 */
 
-	public  Set<String> getOperationCodesByRoleIdAndruleDataId(String roleId,String functionId);
+	public  Set<String> getDataRuleIdsByRoleIdAndFunctionId(String roleId,String functionId);
+		
+	/**
+	 * 根据角色ID 和 菜单Id 获取 具有操作权限的按钮Codes
+	 * @param roleId
+	 * @param functionId
+	 * @return
+	 */
+	public  Set<String> getOperationCodesByRoleIdAndFunctionId(String roleId,String functionId);
 
-	public  Set<String> getOperationCodesByUserIdAndDataId(String userId,String functionId);
-
+	
 	/**
 	 * 加载所有图标
 	 * @return
@@ -166,10 +158,49 @@ public interface SystemService extends CommonService{
 	public void addDataLog(String tableName, String dataId, String dataContent);
 
 	/***
-	 * 根据授权组Id 和 菜单Id 获取具有操作权限的数据规则
+	 * 获取二级管理员页面控件权限授权配置【二级管理员后台权限配置功能】
+	 * @param groupId 部门角色组ID
+	 * @param functionId 选中菜单ID
+	 * @Param type 0:部门管理员组/1:部门角色
 	 */
-	public Set<String> getOperationsByGroupIdAndFunctionId(String groupId,String functionId);
+	public Set<String> getDepartAuthGroupOperationSet(String groupId,String functionId,String type);
 	
-	public Set<String> getOperationCodesByGroupIdAndGroupDataId(String groupId,String functionId);
+	/***
+	 * 获取二级管理员数据权限授权配置【二级管理员后台权限配置功能】
+	 * @param groupId 部门角色组ID
+	 * @param functionId 选中菜单ID
+	 * @Param type  0:部门管理员组/1:部门角色
+	 */
+	public Set<String> getDepartAuthGroupDataRuleSet(String groupId,String functionId,String type);
 
+	
+	/**
+	 * 【AuthInterceptor】获取登录用户的数据权限Ids
+	 * @param userId
+	 * @param functionId
+	 * @return
+	 */
+
+	public Set<String> getLoginDataRuleIdsByUserId(String userId,String functionId, String orgId);
+
+	
+	/***
+	 * 【AuthInterceptor】获取登录用户的页面控件权限
+	 */
+
+	public List<TSOperation> getLoginOperationsByUserId(String userId,String functionId, String orgId);
+
+	
+	/**
+	 * 【AuthInterceptor】判断是否有菜单访问权限
+	 */
+	public boolean loginUserIsHasMenuAuth(String requestPath,String clickFunctionId,String userid,String orgId);
+	
+	/**
+	 * 【AuthInterceptor】通过请求地址，获取数据库对应的菜单ID
+	 * @param requestPath
+	 * @return
+	 */
+	public String getFunctionIdByUrl(String requestPath,String menuPath);
+	
 }
